@@ -1,0 +1,286 @@
+.review-slider {
+  width: 100%;
+  margin: 2rem 0;
+}
+
+.review-slider-container {
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.review-cards-wrapper {
+  display: flex;
+  gap: 12px;
+  transition: transform 0.6s ease;
+  padding: 0.5rem 0;
+  overflow: visible;
+}
+
+.review-card {
+  flex: 0 0 270px;
+  height: 185px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(24, 49, 55, 0.06);
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  margin-right: 12px;
+}
+
+.review-card:last-child {
+  margin-right: 0;
+}
+
+.review-card.loading {
+  background: #f8f9fa;
+  border: 1px dashed #dee2e6;
+}
+
+.review-card.error {
+  background: #fff5f5;
+  border: 1px solid #fed7d7;
+}
+
+.review-card.active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.review-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(24, 49, 55, 0.12);
+}
+
+.review-card-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+}
+
+.review-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+  text-align: left;
+  width: 100%;
+}
+
+.review-emoji {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.review-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.review-stars {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 4px;
+  text-align: left;
+  width: 100%;
+}
+
+.review-footer {
+  text-align: left;
+  width: 100%;
+}
+
+.star {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.star.filled {
+  color: #ff9500;
+}
+
+.star.empty {
+  color: #e5e5e5;
+}
+
+.review-content {
+  font-size: 11px;
+  line-height: 1.3;
+  color: #666666;
+  margin: 0 0 4px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+}
+
+.review-footer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: #999999;
+}
+
+.reviewer-name {
+  font-weight: 500;
+}
+
+.review-date {
+  color: #bbbbbb;
+}
+
+/* Drag functionality */
+.review-slider-container {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.review-cards-wrapper {
+  will-change: transform;
+}
+
+/* RTL Support */
+[dir="rtl"] .review-slider-container {
+  direction: rtl;
+}
+
+[dir="rtl"] .review-cards-wrapper {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .review-header {
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  text-align: right;
+}
+
+[dir="rtl"] .review-stars {
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  text-align: right;
+}
+
+[dir="rtl"] .review-footer {
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  gap: 0;
+  text-align: right;
+}
+
+[dir="rtl"] .review-date {
+  margin-left: 4px;
+}
+
+[dir="rtl"] .review-content {
+  text-align: right;
+}
+
+[dir="rtl"] .review-card-content {
+  align-items: flex-end;
+}
+
+[dir="rtl"] .review-card {
+  margin-right: 0;
+  margin-left: 12px;
+}
+
+[dir="rtl"] .review-card:last-child {
+  margin-left: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .review-slider-container {
+    padding: 0;
+  }
+
+  .review-cards-wrapper {
+    gap: 12px;
+  }
+
+  .review-card {
+    flex: 0 0 270px;
+    height: 185px;
+    padding: 10px;
+    margin-right: 12px;
+  }
+
+  .review-title {
+    font-size: 13px;
+  }
+
+  .review-content {
+    font-size: 10px;
+  }
+
+  .review-footer {
+    font-size: 9px;
+  }
+
+  [dir="rtl"] .review-card {
+    margin-right: 0;
+    margin-left: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .review-card {
+    flex: 0 0 270px;
+    height: 185px;
+    padding: 8px;
+  }
+
+  .review-title {
+    font-size: 12px;
+  }
+
+  .review-content {
+    font-size: 9px;
+    -webkit-line-clamp: 2;
+  }
+
+  .review-footer {
+    font-size: 8px;
+  }
+}
+
+/* Desktop enhancements */
+@media (min-width: 1024px) {
+  .review-card {
+    flex: 0 0 350px;
+    height: 220px;
+    padding: 16px;
+  }
+
+  .review-title {
+    font-size: 16px;
+  }
+
+  .review-content {
+    font-size: 13px;
+  }
+
+  .review-footer {
+    font-size: 12px;
+  }
+
+  .star {
+    font-size: 14px;
+  }
+}

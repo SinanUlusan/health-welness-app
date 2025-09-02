@@ -1,0 +1,4 @@
+{
+  "/payments/create-intent": "/payments/create-intent",
+  "/payments/process": "/payments/process"
+}

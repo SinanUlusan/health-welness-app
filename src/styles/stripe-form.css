@@ -1,0 +1,403 @@
+/* Stripe Payment Form Styles */
+.stripe-payment-form {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: var(--spacing-lg);
+  background: white;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Payment Summary */
+.payment-summary {
+  background: #f8fafc;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+  border: 1px solid #e2e8f0;
+}
+
+.summary-title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-md);
+}
+
+.summary-item,
+.summary-discount,
+.summary-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) 0;
+}
+
+.summary-item {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.summary-discount {
+  color: var(--color-success);
+  font-size: var(--font-size-sm);
+}
+
+.summary-total {
+  border-top: 2px solid #e2e8f0;
+  margin-top: var(--spacing-sm);
+  padding-top: var(--spacing-md);
+  font-weight: 600;
+  font-size: var(--font-size-lg);
+}
+
+.item-name,
+.discount-label,
+.total-label {
+  color: var(--color-text-secondary);
+}
+
+.item-price,
+.discount-amount,
+.total-amount {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.total-amount {
+  color: var(--color-primary);
+  font-size: var(--font-size-xl);
+}
+
+/* Payment Form */
+.payment-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.form-label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.form-input {
+  padding: var(--spacing-md);
+  border: 2px solid #e2e8f0;
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-md);
+  background: #f8fafc;
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+}
+
+.form-input:not(:disabled) {
+  background: white;
+  color: var(--color-text-primary);
+  cursor: text;
+}
+
+.form-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(71, 66, 133, 0.1);
+  outline: none;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+}
+
+/* Stripe Card Element Container */
+.card-element-container {
+  padding: var(--spacing-md);
+  border: 2px solid #e2e8f0;
+  border-radius: var(--radius-lg);
+  background: white;
+  transition: border-color 0.2s ease;
+}
+
+.card-element-container:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(71, 66, 133, 0.1);
+}
+
+/* Stripe Elements styling is handled by the cardElementOptions */
+.StripeElement {
+  height: 24px;
+  padding: 0;
+}
+
+.StripeElement--focus {
+  outline: none;
+}
+
+/* Error Messages */
+.error-message {
+  padding: var(--spacing-xs);
+  color: #dc2626;
+  font-size: var(--font-size-xs);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.error-content {
+  padding: 1rem;
+}
+
+/* Test Cards Info */
+.test-cards-info {
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+  font-size: var(--font-size-sm);
+}
+
+.test-cards-info summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #0369a1;
+  padding: var(--spacing-sm);
+}
+
+.test-cards-info summary:hover {
+  color: #0284c7;
+}
+
+.test-cards-list {
+  margin-top: var(--spacing-md);
+  padding-left: var(--spacing-md);
+}
+
+.test-card {
+  padding: var(--spacing-xs) 0;
+  font-family: monospace;
+  font-size: var(--font-size-xs);
+}
+
+.test-card strong {
+  color: var(--color-text-primary);
+  font-family: inherit;
+}
+
+.test-note {
+  margin-top: var(--spacing-sm);
+  font-style: italic;
+  color: var(--color-text-secondary);
+}
+
+/* Submit Button */
+.payment-submit {
+  padding: var(--spacing-lg) var(--spacing-xl);
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  border-radius: var(--radius-lg);
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  min-height: 56px;
+}
+
+.payment-submit:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(71, 66, 133, 0.3);
+}
+
+.payment-submit:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Loading Content */
+.loading-content {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Security Notice */
+.security-notice {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  text-align: center;
+  justify-content: center;
+  padding: var(--spacing-md);
+  background: #f9fafb;
+  border-radius: var(--radius-lg);
+  margin-top: var(--spacing-md);
+}
+
+.security-notice svg {
+  color: var(--color-success);
+  flex-shrink: 0;
+}
+
+/* Demo Notice */
+.demo-notice {
+  background: #fef3c7;
+  border: 1px solid #fbbf24;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+  margin-top: var(--spacing-md);
+  text-align: center;
+}
+
+.demo-notice p {
+  margin: 0;
+  color: #92400e;
+  font-size: var(--font-size-sm);
+}
+
+/* Use Card Buttons */
+.use-card-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  margin-left: var(--spacing-sm);
+  transition: background-color 0.2s ease;
+}
+
+.use-card-btn:hover {
+  background: #2563eb;
+}
+
+/* RTL Support */
+[dir="rtl"] .summary-item,
+[dir="rtl"] .summary-discount,
+[dir="rtl"] .summary-total {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .form-row {
+  direction: rtl;
+}
+
+[dir="rtl"] .form-input {
+  text-align: right;
+}
+
+[dir="rtl"] .test-cards-list {
+  padding-left: 0;
+  padding-right: var(--spacing-md);
+}
+
+[dir="rtl"] .use-card-btn {
+  margin-left: 0;
+  margin-right: var(--spacing-sm);
+}
+
+[dir="rtl"] .loading-content {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .security-notice {
+  flex-direction: row-reverse;
+}
+
+/* Responsive Design */
+@media (max-width: 639px) {
+  .stripe-payment-form {
+    padding: var(--spacing-md);
+    margin: var(--spacing-md);
+  }
+
+  .payment-summary {
+    padding: var(--spacing-md);
+  }
+
+  .summary-title {
+    font-size: var(--font-size-md);
+  }
+
+  .summary-item,
+  .summary-discount,
+  .summary-total {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+  }
+
+  /* RTL responsive adjustments */
+  [dir="rtl"] .summary-item,
+  [dir="rtl"] .summary-discount,
+  [dir="rtl"] .summary-total {
+    align-items: flex-end;
+  }
+
+  .payment-submit {
+    padding: var(--spacing-md);
+    font-size: var(--font-size-md);
+  }
+}
+
+/* Dark mode support (if implemented) */
+@media (prefers-color-scheme: dark) {
+  .stripe-payment-form {
+    background: #1f2937;
+    color: #f9fafb;
+  }
+
+  .payment-summary {
+    background: #374151;
+    border-color: #4b5563;
+  }
+
+  .form-input {
+    background: #374151;
+    border-color: #4b5563;
+    color: #d1d5db;
+  }
+
+  .card-element-container {
+    background: #374151;
+    border-color: #4b5563;
+  }
+
+  .security-notice {
+    background: #374151;
+  }
+}
