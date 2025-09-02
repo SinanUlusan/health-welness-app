@@ -14,17 +14,19 @@ vi.mock("react-i18next", () => ({
   }),
 }));
 
-vi.mock("../hooks/useAppState", () => ({
+vi.mock("../../hooks/useAppState", () => ({
   useAppState: () => ({
     appState: {
       language: "en",
       direction: "ltr",
     },
-    navigate: vi.fn(),
+    switchLanguage: vi.fn(),
+    previousStep: vi.fn(),
   }),
 }));
 
-vi.mock("../services/analytics", () => ({
+vi.mock("../../services/analytics", () => ({
+  trackUserInteraction: vi.fn(),
   trackLanguageChange: vi.fn(),
 }));
 

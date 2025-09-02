@@ -1,15 +1,22 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
+import { Controller, useFormState } from "react-hook-form";
 import {
   createPaymentIntent,
   processPayment,
   formatPrice,
   toCents,
   TEST_CARDS,
-} from "../services/stripe";
-import { trackPaymentEvent } from "../services/analytics";
-import type { SubscriptionPlan } from "../types";
+} from "../../services/stripe";
+import { trackPaymentEvent } from "../../services/analytics";
+import {
+  usePaymentForm,
+  useFormHelpers,
+  useFormFormatters,
+} from "../../hooks/useFormValidation";
+import type { SubscriptionPlan } from "../../types";
+import type { PaymentFormData } from "../../schemas/validation";
 
 interface StripePaymentFormProps {
   plan: SubscriptionPlan;
@@ -33,17 +40,38 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
   const { t } = useTranslation();
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string>("");
-  const [cardNumber, setCardNumber] = useState("");
-  const [expiryDate, setExpiryDate] = useState("");
-  const [cvc, setCvc] = useState("");
-  const [cardholderName, setCardholderName] = useState("");
+
+  const { getFieldError, getFieldClasses } = useFormHelpers();
+  const {
+    formatCardNumber,
+    formatExpirationDate,
+    formatCVC,
+    formatCardholderName,
+  } = useFormFormatters();
+
+  // Initialize form with React Hook Form + Zod
+  const form = usePaymentForm(t, {
+    email: customerEmail,
+    paymentMethod: "card",
+    cardNumber: "",
+    expirationDate: "",
+    cvc: "",
+    cardholderName: "",
+  });
+
+  const { control, handleSubmit, setValue } = form;
+
+  const { errors, isValid, touchedFields } = useFormState({ control });
 
   const isLoading = processing || externalLoading;
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-
-    if (!cardNumber || !expiryDate || !cvc || !cardholderName) {
+  const handleFormSubmit = async (data: PaymentFormData) => {
+    if (
+      !data.cardNumber ||
+      !data.expirationDate ||
+      !data.cvc ||
+      !data.cardholderName
+    ) {
       setError(
         t("payment.stripe.fillAllFields", "Please fill in all card details.")
       );
@@ -62,15 +90,15 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
         amount: toCents(plan.price),
         currency: "usd",
         planId: plan.id,
-        customerEmail: customerEmail,
-        customerName: cardholderName,
+        customerEmail: data.email,
+        customerName: data.cardholderName,
       });
 
       // Process payment (mock)
       const result = await processPayment(null, clientSecret, {
-        email: customerEmail,
-        name: cardholderName,
-        cardNumber: cardNumber.replace(/\s/g, ""), // Remove spaces for validation
+        email: data.email,
+        name: data.cardholderName,
+        cardNumber: data.cardNumber.replace(/\s/g, ""), // Remove spaces for validation
         returnUrl: `${window.location.origin}/payment/success`,
       });
 
@@ -99,24 +127,6 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
     } finally {
       setProcessing(false);
     }
-  };
-
-  const formatCardNumber = (value: string) => {
-    const cleanValue = value.replace(/\D/g, "");
-    const groups = cleanValue.match(/.{1,4}/g) || [];
-    return groups.join(" ").substring(0, 19);
-  };
-
-  const formatExpiryDate = (value: string) => {
-    const cleanValue = value.replace(/\D/g, "");
-    if (cleanValue.length >= 2) {
-      return `${cleanValue.substring(0, 2)}/${cleanValue.substring(2, 4)}`;
-    }
-    return cleanValue;
-  };
-
-  const formatCVC = (value: string) => {
-    return value.replace(/\D/g, "").substring(0, 4);
   };
 
   return (
@@ -149,17 +159,18 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
       </div>
 
       {/* Payment Form */}
-      <form onSubmit={handleSubmit} className="payment-form">
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="payment-form">
         {/* Customer Email */}
         <div className="form-group">
           <label className="form-label">
             {t("payment.email", "Email Address")}
           </label>
-          <input
-            type="email"
-            value={customerEmail}
-            className="form-input"
-            disabled
+          <Controller
+            name="email"
+            control={control}
+            render={({ field }) => (
+              <input {...field} type="email" className="form-input" disabled />
+            )}
           />
         </div>
 
@@ -168,14 +179,33 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
           <label className="form-label">
             {t("payment.cardNumber", "Card Number")}
           </label>
-          <input
-            type="text"
-            value={cardNumber}
-            onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-            className="form-input"
-            placeholder="1234 5678 9012 3456"
-            maxLength={19}
+          <Controller
+            name="cardNumber"
+            control={control}
+            render={({ field }) => (
+              <input
+                {...field}
+                type="text"
+                className={getFieldClasses(
+                  errors,
+                  touchedFields,
+                  "cardNumber",
+                  "form-input"
+                )}
+                placeholder="1234 5678 9012 3456"
+                maxLength={19}
+                onChange={(e) => {
+                  const formatted = formatCardNumber(e.target.value);
+                  field.onChange(formatted);
+                }}
+              />
+            )}
           />
+          {getFieldError(errors, "cardNumber") && (
+            <span className="error-text">
+              {getFieldError(errors, "cardNumber")}
+            </span>
+          )}
         </div>
 
         <div className="form-row">
@@ -184,27 +214,63 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
             <label className="form-label">
               {t("payment.expiryDate", "Expiry Date")}
             </label>
-            <input
-              type="text"
-              value={expiryDate}
-              onChange={(e) => setExpiryDate(formatExpiryDate(e.target.value))}
-              className="form-input"
-              placeholder="MM/YY"
-              maxLength={5}
+            <Controller
+              name="expirationDate"
+              control={control}
+              render={({ field }) => (
+                <input
+                  {...field}
+                  type="text"
+                  className={getFieldClasses(
+                    errors,
+                    touchedFields,
+                    "expirationDate",
+                    "form-input"
+                  )}
+                  placeholder="MM/YY"
+                  maxLength={5}
+                  onChange={(e) => {
+                    const formatted = formatExpirationDate(e.target.value);
+                    field.onChange(formatted);
+                  }}
+                />
+              )}
             />
+            {getFieldError(errors, "expirationDate") && (
+              <span className="error-text">
+                {getFieldError(errors, "expirationDate")}
+              </span>
+            )}
           </div>
 
           {/* CVC */}
           <div className="form-group">
             <label className="form-label">{t("payment.cvc", "CVC")}</label>
-            <input
-              type="text"
-              value={cvc}
-              onChange={(e) => setCvc(formatCVC(e.target.value))}
-              className="form-input"
-              placeholder="123"
-              maxLength={4}
+            <Controller
+              name="cvc"
+              control={control}
+              render={({ field }) => (
+                <input
+                  {...field}
+                  type="text"
+                  className={getFieldClasses(
+                    errors,
+                    touchedFields,
+                    "cvc",
+                    "form-input"
+                  )}
+                  placeholder="123"
+                  maxLength={4}
+                  onChange={(e) => {
+                    const formatted = formatCVC(e.target.value);
+                    field.onChange(formatted);
+                  }}
+                />
+              )}
             />
+            {getFieldError(errors, "cvc") && (
+              <span className="error-text">{getFieldError(errors, "cvc")}</span>
+            )}
           </div>
         </div>
 
@@ -213,14 +279,33 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
           <label className="form-label">
             {t("payment.cardholderName", "Cardholder Name")}
           </label>
-          <input
-            type="text"
-            value={cardholderName}
-            onChange={(e) => setCardholderName(e.target.value)}
-            className="form-input"
-            placeholder={t("payment.cardholderNamePlaceholder", "John Doe")}
-            maxLength={50}
+          <Controller
+            name="cardholderName"
+            control={control}
+            render={({ field }) => (
+              <input
+                {...field}
+                type="text"
+                className={getFieldClasses(
+                  errors,
+                  touchedFields,
+                  "cardholderName",
+                  "form-input"
+                )}
+                placeholder={t("payment.cardholderNamePlaceholder", "John Doe")}
+                maxLength={50}
+                onChange={(e) => {
+                  const formatted = formatCardholderName(e.target.value);
+                  field.onChange(formatted);
+                }}
+              />
+            )}
           />
+          {getFieldError(errors, "cardholderName") && (
+            <span className="error-text">
+              {getFieldError(errors, "cardholderName")}
+            </span>
+          )}
         </div>
 
         {/* Error Message */}
@@ -248,7 +333,11 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
                   <button
                     type="button"
                     onClick={() =>
-                      setCardNumber(formatCardNumber(TEST_CARDS.VISA_SUCCESS))
+                      setValue(
+                        "cardNumber",
+                        formatCardNumber(TEST_CARDS.VISA_SUCCESS),
+                        { shouldValidate: true }
+                      )
                     }
                     className="use-card-btn"
                   >
@@ -260,7 +349,11 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
                   <button
                     type="button"
                     onClick={() =>
-                      setCardNumber(formatCardNumber(TEST_CARDS.VISA_DECLINE))
+                      setValue(
+                        "cardNumber",
+                        formatCardNumber(TEST_CARDS.VISA_DECLINE),
+                        { shouldValidate: true }
+                      )
                     }
                     className="use-card-btn"
                   >
@@ -272,9 +365,13 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
                   <button
                     type="button"
                     onClick={() => {
-                      setExpiryDate("12/34");
-                      setCvc("123");
-                      setCardholderName("Test User");
+                      setValue("expirationDate", "12/34", {
+                        shouldValidate: true,
+                      });
+                      setValue("cvc", "123", { shouldValidate: true });
+                      setValue("cardholderName", "Test User", {
+                        shouldValidate: true,
+                      });
                     }}
                     className="use-card-btn"
                   >
@@ -290,7 +387,7 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
         <button
           type="submit"
           className="btn btn-primary payment-submit"
-          disabled={isLoading}
+          disabled={isLoading || !isValid}
         >
           {isLoading ? (
             <div className="loading-content">

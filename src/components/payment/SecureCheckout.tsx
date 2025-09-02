@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { trackPaymentEvent, trackUserInteraction } from "../services/analytics";
-import type { PaymentInfo, SubscriptionPlan } from "../types";
+import {
+  trackPaymentEvent,
+  trackUserInteraction,
+} from "../../services/analytics";
+import type { PaymentInfo, SubscriptionPlan } from "../../types";
 import "./SecureCheckout.css";
 
 interface SecureCheckoutProps {
@@ -30,6 +33,11 @@ export const SecureCheckout: React.FC<SecureCheckoutProps> = ({
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Use refs to store timer IDs
+  const loadTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const authTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Check if current language is RTL
   const isRTL = i18n.language === "ar";
@@ -60,41 +68,53 @@ export const SecureCheckout: React.FC<SecureCheckoutProps> = ({
     };
   };
 
-  // Countdown timer - fixed to prevent stalling
-  useEffect(() => {
-    if (step !== "auth") return; // Only run timer during auth step
+  // Initialize component on first render
+  const initializeComponent = () => {
+    if (!isInitialized) {
+      trackUserInteraction("secure_checkout", "page_load");
+      setIsInitialized(true);
 
-    const timer = setInterval(() => {
+      // Start loading timer
+      loadTimerRef.current = setTimeout(() => {
+        setStep("auth");
+        startAuthTimer();
+      }, 2000);
+    }
+  };
+
+  // Start auth timer function
+  const startAuthTimer = () => {
+    authTimerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         const newTime = prev - 1;
         if (newTime <= 0) {
-          // Timer will be cleared by the cleanup function
+          if (authTimerRef.current) {
+            clearInterval(authTimerRef.current);
+          }
+          onCancel(); // Redirect to cancel page when timer expires
           return 0;
         }
         return newTime;
       });
     }, 1000);
+  };
 
-    return () => clearInterval(timer);
-  }, [step]);
-
-  // Handle timeout when timeLeft reaches 0
-  useEffect(() => {
-    if (step === "auth" && timeLeft <= 0) {
-      onCancel(); // Redirect to cancel page when timer expires
+  // Cleanup function
+  const cleanupTimers = () => {
+    if (loadTimerRef.current) {
+      clearTimeout(loadTimerRef.current);
+      loadTimerRef.current = null;
     }
-  }, [timeLeft, step, onCancel]);
+    if (authTimerRef.current) {
+      clearInterval(authTimerRef.current);
+      authTimerRef.current = null;
+    }
+  };
 
-  // Simulate loading 3D Secure page
-  useEffect(() => {
-    trackUserInteraction("secure_checkout", "page_load");
-
-    const loadTimer = setTimeout(() => {
-      setStep("auth");
-    }, 2000);
-
-    return () => clearTimeout(loadTimer);
-  }, []);
+  // Initialize on first render
+  if (!isInitialized) {
+    initializeComponent();
+  }
 
   const formatTime = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
@@ -115,6 +135,9 @@ export const SecureCheckout: React.FC<SecureCheckoutProps> = ({
     setStep("processing");
     setError("");
     trackPaymentEvent("processing_started", plan.id);
+
+    // Clear timer when processing starts
+    cleanupTimers();
 
     // Simulate 3D Secure processing
     try {
@@ -159,6 +182,11 @@ export const SecureCheckout: React.FC<SecureCheckoutProps> = ({
       trackPaymentEvent("processing_error", "secure_checkout");
       onError(t("paywall.secureCheckout.processingError"));
     }
+  };
+
+  const handleCancel = () => {
+    cleanupTimers();
+    onCancel();
   };
 
   const maskedCardNumber =
@@ -259,7 +287,7 @@ export const SecureCheckout: React.FC<SecureCheckoutProps> = ({
           </div>
 
           <div className="button-group">
-            <button type="button" onClick={onCancel} className="btn-cancel">
+            <button type="button" onClick={handleCancel} className="btn-cancel">
               {t("paywall.secureCheckout.cancel")}
             </button>
             <button type="submit" className="btn-submit">

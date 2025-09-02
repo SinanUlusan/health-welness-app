@@ -282,5 +282,10 @@
     "getItOn": "Get it on",
     "yourEmail": "your email",
     "backToHome": "Back to Homepage"
+  },
+  "errorFallback": {
+    "title": "Something went wrong",
+    "description": "We've been notified and are working to fix the issue.",
+    "refreshButton": "Refresh Page"
   }
 }

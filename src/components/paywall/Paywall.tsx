@@ -1,33 +1,42 @@
-import React, { useState, useEffect } from "react";
+import React, {
+  useReducer,
+  useMemo,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import appOfTheDayImage from "../assets/images/app-of-the-day.png";
-import cardIconImage from "../assets/images/card-icon.png";
-import appleLogoBlackImage from "../assets/images/apple-logo-black.png";
-import paypalLogoImage from "../assets/images/paypal-logo.png";
-import testimonialBeforeImage from "../assets/images/testimonial-before.png";
-import testimonialAfterImage from "../assets/images/testimonial-after.png";
-import fatBodyImage from "../assets/images/fat-body.png";
-import skinnyBodyImage from "../assets/images/skinny-body.png";
+import appOfTheDayImage from "../../assets/images/app-of-the-day.png";
+import cardIconImage from "../../assets/images/card-icon.png";
+import appleLogoBlackImage from "../../assets/images/apple-logo-black.png";
+import paypalLogoImage from "../../assets/images/paypal-logo.png";
+import testimonialBeforeImage from "../../assets/images/testimonial-before.png";
+import testimonialAfterImage from "../../assets/images/testimonial-after.png";
+import fatBodyImage from "../../assets/images/fat-body.png";
+import skinnyBodyImage from "../../assets/images/skinny-body.png";
 import type {
   SubscriptionPlan,
   PaymentInfo,
   Testimonial,
   Country,
-} from "../types";
-import { apiService } from "../services/api";
-import { trackPaymentEvent, trackPlanSelection } from "../services/analytics";
-import { useAppState } from "../hooks/useAppState";
+} from "../../types";
+import { apiService } from "../../services/api";
+import {
+  trackPaymentEvent,
+  trackPlanSelection,
+} from "../../services/analytics";
+import { useAppState, useInterval } from "../../hooks";
 import {
   validateExpirationDate,
   formatCardNumber,
   formatExpirationDate,
   validateEmail,
-} from "../utils/validation";
-import { addLanguagePrefix } from "../utils/urlUtils";
-import { SecureCheckout } from "./SecureCheckout";
-import { ReviewSlider } from "./ReviewSlider";
+} from "../../utils/validation";
+import { addLanguagePrefix } from "../../utils/urlUtils";
+import { SecureCheckout } from "../payment/SecureCheckout";
+import { ReviewSlider } from "../reviews/ReviewSlider";
 import "./Paywall.css";
 
 interface PaywallProps {
@@ -35,6 +44,104 @@ interface PaywallProps {
   loading?: boolean;
   onSecureCheckoutToggle?: (show: boolean) => void;
 }
+
+// Combined state interfaces
+interface UIState {
+  currentTestimonialIndex: number;
+  isSliderPaused: boolean;
+  showSecureCheckout: boolean;
+}
+
+interface FormState {
+  paymentInfo: Partial<PaymentInfo>;
+  expirationInput: string;
+  errors: Record<string, string>;
+}
+
+interface ProcessingState {
+  isProcessing: boolean;
+  timeLeft: number;
+}
+
+// Action types for useReducer
+type UIAction =
+  | { type: "SET_TESTIMONIAL_INDEX"; payload: number }
+  | { type: "SET_SLIDER_PAUSED"; payload: boolean }
+  | { type: "SET_SHOW_SECURE_CHECKOUT"; payload: boolean };
+
+type FormAction =
+  | { type: "UPDATE_PAYMENT_INFO"; payload: Partial<PaymentInfo> }
+  | { type: "SET_EXPIRATION_INPUT"; payload: string }
+  | { type: "SET_ERRORS"; payload: Record<string, string> }
+  | { type: "CLEAR_ERROR"; payload: string }
+  | { type: "CLEAR_CARD_ERRORS" };
+
+type ProcessingAction =
+  | { type: "SET_PROCESSING"; payload: boolean }
+  | { type: "DECREMENT_TIME" }
+  | { type: "SET_TIME"; payload: number };
+
+// Reducers
+
+const uiReducer = (state: UIState, action: UIAction): UIState => {
+  switch (action.type) {
+    case "SET_TESTIMONIAL_INDEX":
+      return { ...state, currentTestimonialIndex: action.payload };
+    case "SET_SLIDER_PAUSED":
+      return { ...state, isSliderPaused: action.payload };
+    case "SET_SHOW_SECURE_CHECKOUT":
+      return { ...state, showSecureCheckout: action.payload };
+    default:
+      return state;
+  }
+};
+
+const formReducer = (state: FormState, action: FormAction): FormState => {
+  switch (action.type) {
+    case "UPDATE_PAYMENT_INFO":
+      return {
+        ...state,
+        paymentInfo: { ...state.paymentInfo, ...action.payload },
+      };
+    case "SET_EXPIRATION_INPUT":
+      return { ...state, expirationInput: action.payload };
+    case "SET_ERRORS":
+      return { ...state, errors: action.payload };
+    case "CLEAR_ERROR": {
+      const newErrors = { ...state.errors };
+      delete newErrors[action.payload];
+      return { ...state, errors: newErrors };
+    }
+    case "CLEAR_CARD_ERRORS": {
+      const clearedErrors = { ...state.errors };
+      delete clearedErrors.cardNumber;
+      delete clearedErrors.expiration;
+      delete clearedErrors.cvc;
+      return { ...state, errors: clearedErrors };
+    }
+    default:
+      return state;
+  }
+};
+
+const processingReducer = (
+  state: ProcessingState,
+  action: ProcessingAction
+): ProcessingState => {
+  switch (action.type) {
+    case "SET_PROCESSING":
+      return { ...state, isProcessing: action.payload };
+    case "DECREMENT_TIME":
+      return {
+        ...state,
+        timeLeft: state.timeLeft <= 0 ? 0 : state.timeLeft - 1,
+      };
+    case "SET_TIME":
+      return { ...state, timeLeft: action.payload };
+    default:
+      return state;
+  }
+};
 
 /**
  * Paywall component with subscription plans and payment form
@@ -48,24 +155,94 @@ export const Paywall: React.FC<PaywallProps> = ({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { appState, selectPlan, updatePaymentInfo } = useAppState();
-  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-  const [countries, setCountries] = useState<Country[]>([]);
-  const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
-  const [isSliderPaused, setIsSliderPaused] = useState(false);
-  const [paymentInfo, setPaymentInfo] = useState<Partial<PaymentInfo>>({
-    paymentMethod: "card",
-    country: "turkey",
-    ...appState.paymentInfo, // Initialize with any existing global payment info
+
+  // Combined state management using useReducer
+  const [uiState, uiDispatch] = useReducer(uiReducer, {
+    currentTestimonialIndex: 0,
+    isSliderPaused: false,
+    showSecureCheckout: false,
   });
-  const [expirationInput, setExpirationInput] = useState("");
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(15 * 60); // 15 minutes in seconds
-  const [showSecureCheckout, setShowSecureCheckout] = useState(false);
+
+  const [formState, formDispatch] = useReducer(formReducer, {
+    paymentInfo: {
+      paymentMethod: "card",
+      country: "turkey",
+      ...appState.paymentInfo,
+    },
+    expirationInput: "",
+    errors: {},
+  });
+
+  const [processingState, processingDispatch] = useReducer(processingReducer, {
+    isProcessing: false,
+    timeLeft: 15 * 60, // 15 minutes in seconds
+  });
 
   // Get selected plan from global state
   const selectedPlan = appState.selectedPlan;
+
+  // Data loading with traditional useEffect approach to avoid hook order issues
+  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        const [plansRes, testimonialsRes, countriesRes] = await Promise.all([
+          apiService.getSubscriptionPlans(),
+          apiService.getTestimonials(),
+          apiService.getCountries(),
+        ]);
+
+        setPlans(plansRes.data || []);
+        setTestimonials(testimonialsRes.data || []);
+        setCountries(countriesRes.data || []);
+      } catch (error) {
+        console.error("Error loading data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  // Auto-select free trial plan when plans are loaded
+  // Using useMemo for computed selection logic
+  useMemo(() => {
+    const freePlan = plans.find((plan: SubscriptionPlan) => plan.isFree);
+    if (freePlan && !selectedPlan) {
+      selectPlan(freePlan);
+    }
+  }, [plans, selectedPlan, selectPlan]);
+
+  // Timer with custom hook - use useCallback to prevent re-renders
+  const decrementTimer = useCallback(() => {
+    processingDispatch({ type: "DECREMENT_TIME" });
+  }, []);
+
+  useInterval(decrementTimer, processingState.timeLeft > 0 ? 1000 : null);
+
+  // Auto-slide testimonials with custom hook - use useCallback to prevent re-renders
+  const nextTestimonial = useCallback(() => {
+    if (testimonials.length <= 1 || uiState.isSliderPaused) return;
+    uiDispatch({
+      type: "SET_TESTIMONIAL_INDEX",
+      payload: (uiState.currentTestimonialIndex + 1) % testimonials.length,
+    });
+  }, [
+    testimonials.length,
+    uiState.isSliderPaused,
+    uiState.currentTestimonialIndex,
+  ]);
+
+  useInterval(
+    nextTestimonial,
+    testimonials.length > 1 && !uiState.isSliderPaused ? 4000 : null
+  );
 
   // Helper function to get testimonial image
   const getTestimonialImage = (imageName: string) => {
@@ -111,20 +288,6 @@ export const Paywall: React.FC<PaywallProps> = ({
     };
   };
 
-  // Countdown timer effect
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prevTime) => {
-        if (prevTime <= 0) {
-          return 0; // Stay at 00:00 when timer reaches zero
-        }
-        return prevTime - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
   // Format time as MM:SS
   const formatTime = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
@@ -133,60 +296,6 @@ export const Paywall: React.FC<PaywallProps> = ({
       .toString()
       .padStart(2, "0")}`;
   };
-
-  // Load subscription plans
-  useEffect(() => {
-    const loadPlans = async () => {
-      const response = await apiService.getSubscriptionPlans();
-      if (response.success && response.data) {
-        setPlans(response.data);
-        // Auto-select the free trial plan
-        const freePlan = response.data.find((plan) => plan.isFree);
-        if (freePlan) {
-          selectPlan(freePlan);
-        }
-      }
-    };
-
-    loadPlans();
-  }, [selectPlan]);
-
-  // Load testimonials
-  useEffect(() => {
-    const loadTestimonials = async () => {
-      const response = await apiService.getTestimonials();
-      if (response.success && response.data) {
-        setTestimonials(response.data);
-      }
-    };
-
-    loadTestimonials();
-  }, []);
-
-  // Load countries
-  useEffect(() => {
-    const loadCountries = async () => {
-      const response = await apiService.getCountries();
-      if (response.success && response.data) {
-        setCountries(response.data);
-      }
-    };
-
-    loadCountries();
-  }, []);
-
-  // Auto-slide testimonials
-  useEffect(() => {
-    if (testimonials.length <= 1 || isSliderPaused) return;
-
-    const slideInterval = setInterval(() => {
-      setCurrentTestimonialIndex(
-        (prevIndex) => (prevIndex + 1) % testimonials.length
-      );
-    }, 4000); // Change slide every 4 seconds
-
-    return () => clearInterval(slideInterval);
-  }, [testimonials.length, isSliderPaused]);
 
   const handlePlanSelect = (plan: SubscriptionPlan) => {
     selectPlan(plan);
@@ -200,14 +309,16 @@ export const Paywall: React.FC<PaywallProps> = ({
     // If payment method is changing, clear card-related fields
     if (field === "paymentMethod") {
       // Clear card-related fields when switching payment methods
-      setPaymentInfo((prev) => ({
-        ...prev,
-        cardNumber: "",
-        expirationMonth: "",
-        expirationYear: "",
-        cvc: "",
-        [field]: formattedValue as "card" | "apple-pay" | "paypal",
-      }));
+      formDispatch({
+        type: "UPDATE_PAYMENT_INFO",
+        payload: {
+          cardNumber: "",
+          expirationMonth: "",
+          expirationYear: "",
+          cvc: "",
+          [field]: formattedValue as "card" | "apple-pay" | "paypal",
+        },
+      });
 
       // Also clear global state for card fields
       updatePaymentInfo({
@@ -219,15 +330,10 @@ export const Paywall: React.FC<PaywallProps> = ({
       });
 
       // Clear expiration input
-      setExpirationInput("");
+      formDispatch({ type: "SET_EXPIRATION_INPUT", payload: "" });
 
       // Clear card-related errors
-      setErrors((prev) => ({
-        ...prev,
-        cardNumber: "",
-        expiration: "",
-        cvc: "",
-      }));
+      formDispatch({ type: "CLEAR_CARD_ERRORS" });
 
       return;
     }
@@ -237,15 +343,17 @@ export const Paywall: React.FC<PaywallProps> = ({
       formattedValue = formatCardNumber(value);
     } else if (field === "expirationMonth") {
       // Handle expiration date formatting and validation
-      const formatted = formatExpirationDate(value, expirationInput);
-      setExpirationInput(formatted);
+      const formatted = formatExpirationDate(value, formState.expirationInput);
+      formDispatch({ type: "SET_EXPIRATION_INPUT", payload: formatted });
 
       const [month, year] = formatted.split("/");
-      setPaymentInfo((prev) => ({
-        ...prev,
-        expirationMonth: month || "",
-        expirationYear: year || "",
-      }));
+      formDispatch({
+        type: "UPDATE_PAYMENT_INFO",
+        payload: {
+          expirationMonth: month || "",
+          expirationYear: year || "",
+        },
+      });
 
       // Also update global state for expiration
       updatePaymentInfo({
@@ -254,27 +362,30 @@ export const Paywall: React.FC<PaywallProps> = ({
       });
 
       // Clear expiration error when user types
-      if (errors.expiration) {
-        setErrors((prev) => ({ ...prev, expiration: "" }));
+      if (formState.errors.expiration) {
+        formDispatch({ type: "CLEAR_ERROR", payload: "expiration" });
       }
 
       // Real-time validation for past dates
       if (month && year && month.length === 2 && year.length === 2) {
         if (!validateExpirationDate(month, year)) {
-          setErrors((prev) => ({
-            ...prev,
-            expiration: t("paywall.errors.expirationPast"),
-          }));
+          formDispatch({
+            type: "SET_ERRORS",
+            payload: {
+              ...formState.errors,
+              expiration: t("paywall.errors.expirationPast"),
+            },
+          });
         }
       }
 
       return;
     }
 
-    setPaymentInfo((prev) => ({
-      ...prev,
-      [field]: formattedValue,
-    }));
+    formDispatch({
+      type: "UPDATE_PAYMENT_INFO",
+      payload: { [field]: formattedValue },
+    });
 
     // Also update global state for all fields including email
     updatePaymentInfo({ [field]: formattedValue });
@@ -286,17 +397,20 @@ export const Paywall: React.FC<PaywallProps> = ({
     }
 
     // Clear error for this field
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
+    if (formState.errors[field]) {
+      formDispatch({ type: "CLEAR_ERROR", payload: field });
     }
 
     // Real-time email validation
     if (field === "email" && formattedValue.trim()) {
       if (!validateEmail(formattedValue)) {
-        setErrors((prev) => ({
-          ...prev,
-          email: t("paywall.errors.emailInvalid"),
-        }));
+        formDispatch({
+          type: "SET_ERRORS",
+          payload: {
+            ...formState.errors,
+            email: t("paywall.errors.emailInvalid"),
+          },
+        });
       }
     }
   };
@@ -304,48 +418,61 @@ export const Paywall: React.FC<PaywallProps> = ({
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!paymentInfo.email || paymentInfo.email.trim() === "") {
+    if (
+      !formState.paymentInfo.email ||
+      formState.paymentInfo.email.trim() === ""
+    ) {
       newErrors.email = t("paywall.errors.emailRequired");
-    } else if (!validateEmail(paymentInfo.email)) {
+    } else if (!validateEmail(formState.paymentInfo.email)) {
       newErrors.email = t("paywall.errors.emailInvalid");
     }
 
-    if (paymentInfo.paymentMethod === "card") {
+    if (formState.paymentInfo.paymentMethod === "card") {
       // Only validate that fields are filled, not their validity
-      if (!paymentInfo.cardNumber || paymentInfo.cardNumber.trim() === "") {
+      if (
+        !formState.paymentInfo.cardNumber ||
+        formState.paymentInfo.cardNumber.trim() === ""
+      ) {
         newErrors.cardNumber = t("paywall.errors.cardNumberRequired");
       }
 
       if (
-        !paymentInfo.expirationMonth ||
-        !paymentInfo.expirationYear ||
+        !formState.paymentInfo.expirationMonth ||
+        !formState.paymentInfo.expirationYear ||
         !validateExpirationDate(
-          paymentInfo.expirationMonth,
-          paymentInfo.expirationYear
+          formState.paymentInfo.expirationMonth,
+          formState.paymentInfo.expirationYear
         )
       ) {
         newErrors.expiration =
-          paymentInfo.expirationMonth && paymentInfo.expirationYear
+          formState.paymentInfo.expirationMonth &&
+          formState.paymentInfo.expirationYear
             ? t("paywall.errors.expirationPast")
             : t("paywall.errors.expirationRequired");
       }
 
-      if (!paymentInfo.cvc || paymentInfo.cvc.trim() === "") {
+      if (
+        !formState.paymentInfo.cvc ||
+        formState.paymentInfo.cvc.trim() === ""
+      ) {
         newErrors.cvc = t("paywall.errors.cvcRequired");
       }
 
-      if (!paymentInfo.country) {
+      if (!formState.paymentInfo.country) {
         newErrors.country = t("paywall.errors.countryRequired");
       }
     }
 
-    setErrors(newErrors);
+    formDispatch({ type: "SET_ERRORS", payload: newErrors });
     return Object.keys(newErrors).length === 0;
   };
 
   const handlePayment = async () => {
     if (!selectedPlan) {
-      setErrors({ general: t("paywall.errors.planRequired") });
+      formDispatch({
+        type: "SET_ERRORS",
+        payload: { general: t("paywall.errors.planRequired") },
+      });
       return;
     }
 
@@ -354,14 +481,14 @@ export const Paywall: React.FC<PaywallProps> = ({
       return;
     }
 
-    setIsProcessing(true);
+    processingDispatch({ type: "SET_PROCESSING", payload: true });
     trackPaymentEvent("payment_initiated", selectedPlan.id);
 
     try {
       // For PayPal and Apple Pay, just redirect to success after email validation
       if (
-        paymentInfo.paymentMethod === "paypal" ||
-        paymentInfo.paymentMethod === "apple-pay"
+        formState.paymentInfo.paymentMethod === "paypal" ||
+        formState.paymentInfo.paymentMethod === "apple-pay"
       ) {
         trackPaymentEvent("payment_success", selectedPlan.id);
         onPaymentComplete();
@@ -369,17 +496,20 @@ export const Paywall: React.FC<PaywallProps> = ({
       }
 
       // For card payments, always proceed to 3D Secure regardless of card validity
-      if (paymentInfo.paymentMethod === "card") {
-        setIsProcessing(false);
-        setShowSecureCheckout(true);
+      if (formState.paymentInfo.paymentMethod === "card") {
+        processingDispatch({ type: "SET_PROCESSING", payload: false });
+        uiDispatch({ type: "SET_SHOW_SECURE_CHECKOUT", payload: true });
         onSecureCheckoutToggle?.(true);
         return;
       }
     } catch {
       trackPaymentEvent("payment_error", selectedPlan.id);
-      setErrors({ general: t("paywall.errors.paymentError") });
+      formDispatch({
+        type: "SET_ERRORS",
+        payload: { general: t("paywall.errors.paymentError") },
+      });
     } finally {
-      setIsProcessing(false);
+      processingDispatch({ type: "SET_PROCESSING", payload: false });
     }
   };
 
@@ -387,21 +517,21 @@ export const Paywall: React.FC<PaywallProps> = ({
     console.log(
       "handleSecureCheckoutSuccess called - navigating to success page"
     );
-    setShowSecureCheckout(false);
+    uiDispatch({ type: "SET_SHOW_SECURE_CHECKOUT", payload: false });
     onSecureCheckoutToggle?.(false);
     // Navigate to payment success page on successful payment
     navigate(addLanguagePrefix("/payment/success", appState.language));
   };
 
   const handleSecureCheckoutCancel = () => {
-    setShowSecureCheckout(false);
+    uiDispatch({ type: "SET_SHOW_SECURE_CHECKOUT", payload: false });
     onSecureCheckoutToggle?.(false);
     // Navigate to payment cancel page
     navigate(addLanguagePrefix("/payment/cancel", appState.language));
   };
 
   const handleSecureCheckoutError = (errorMessage?: string) => {
-    setShowSecureCheckout(false);
+    uiDispatch({ type: "SET_SHOW_SECURE_CHECKOUT", payload: false });
     onSecureCheckoutToggle?.(false);
     // Log the error message for debugging
     console.log("Payment error:", errorMessage);
@@ -410,10 +540,10 @@ export const Paywall: React.FC<PaywallProps> = ({
   };
 
   // Show 3D Secure checkout if needed
-  if (showSecureCheckout && selectedPlan && paymentInfo) {
+  if (uiState.showSecureCheckout && selectedPlan && formState.paymentInfo) {
     return (
       <SecureCheckout
-        paymentInfo={paymentInfo as PaymentInfo}
+        paymentInfo={formState.paymentInfo as PaymentInfo}
         plan={selectedPlan}
         onSuccess={handleSecureCheckoutSuccess}
         onCancel={handleSecureCheckoutCancel}
@@ -586,7 +716,7 @@ export const Paywall: React.FC<PaywallProps> = ({
           <div className="offer-content">
             <span className="offer-icon">⏰</span>
             <span className="offer-text">
-              {t("paywall.specialPrice")} {formatTime(timeLeft)}
+              {t("paywall.specialPrice")} {formatTime(processingState.timeLeft)}
             </span>
           </div>
         </motion.div>
@@ -763,12 +893,16 @@ export const Paywall: React.FC<PaywallProps> = ({
 
           <div
             className="testimonials-slider"
-            onMouseEnter={() => setIsSliderPaused(true)}
-            onMouseLeave={() => setIsSliderPaused(false)}
+            onMouseEnter={() =>
+              uiDispatch({ type: "SET_SLIDER_PAUSED", payload: true })
+            }
+            onMouseLeave={() =>
+              uiDispatch({ type: "SET_SLIDER_PAUSED", payload: false })
+            }
           >
             {testimonials.length > 0 && (
               <motion.div
-                key={currentTestimonialIndex}
+                key={uiState.currentTestimonialIndex}
                 className="testimonial-card"
                 initial={{ opacity: 0, x: 30, scale: 0.95 }}
                 animate={{ opacity: 1, x: 0, scale: 1 }}
@@ -784,20 +918,22 @@ export const Paywall: React.FC<PaywallProps> = ({
                   <div
                     className="testimonial-image before-image"
                     style={{
-                      backgroundImage: `url(${getTestimonialImage(testimonials[currentTestimonialIndex].beforeImage)})`,
+                      backgroundImage: `url(${getTestimonialImage(testimonials[uiState.currentTestimonialIndex].beforeImage)})`,
                     }}
                   ></div>
                   <div
                     className="testimonial-image after-image"
                     style={{
-                      backgroundImage: `url(${getTestimonialImage(testimonials[currentTestimonialIndex].afterImage)})`,
+                      backgroundImage: `url(${getTestimonialImage(testimonials[uiState.currentTestimonialIndex].afterImage)})`,
                     }}
                   ></div>
                   <div className="testimonial-name">
                     {(() => {
-                      const fullName = t(
-                        `paywall.testimonials.names.${testimonials[currentTestimonialIndex].id}`,
-                        testimonials[currentTestimonialIndex].name
+                      const fullName = String(
+                        t(
+                          `paywall.testimonials.names.${testimonials[uiState.currentTestimonialIndex].id}`,
+                          testimonials[uiState.currentTestimonialIndex].name
+                        )
                       );
                       const parts = fullName.split(", ");
                       return (
@@ -816,22 +952,28 @@ export const Paywall: React.FC<PaywallProps> = ({
                 <div className="testimonial-content">
                   <div className="testimonial-rating">
                     <span className="rating-title">
-                      {t(
-                        `paywall.testimonials.ratingTitles.${testimonials[currentTestimonialIndex].id}`,
-                        testimonials[currentTestimonialIndex].ratingTitle
+                      {String(
+                        t(
+                          `paywall.testimonials.ratingTitles.${testimonials[uiState.currentTestimonialIndex].id}`,
+                          testimonials[uiState.currentTestimonialIndex]
+                            .ratingTitle
+                        )
                       )}
                     </span>
                     <div className="stars">
-                      {"★".repeat(testimonials[currentTestimonialIndex].stars)}
+                      {"★".repeat(
+                        testimonials[uiState.currentTestimonialIndex].stars
+                      )}
                     </div>
                   </div>
                   <p className="testimonial-text">
                     "
-                    {t(
-                      `paywall.testimonials.texts.${testimonials[currentTestimonialIndex].id}`,
-                      testimonials[currentTestimonialIndex].text
+                    {String(
+                      t(
+                        `paywall.testimonials.texts.${testimonials[uiState.currentTestimonialIndex].id}`,
+                        testimonials[uiState.currentTestimonialIndex].text
+                      )
                     )}
-                    "
                   </p>
                 </div>
               </motion.div>
@@ -843,9 +985,14 @@ export const Paywall: React.FC<PaywallProps> = ({
                 <button
                   key={index}
                   className={`slider-indicator ${
-                    index === currentTestimonialIndex ? "active" : ""
+                    index === uiState.currentTestimonialIndex ? "active" : ""
                   }`}
-                  onClick={() => setCurrentTestimonialIndex(index)}
+                  onClick={() =>
+                    uiDispatch({
+                      type: "SET_TESTIMONIAL_INDEX",
+                      payload: index,
+                    })
+                  }
                 />
               ))}
             </div>
@@ -864,7 +1011,7 @@ export const Paywall: React.FC<PaywallProps> = ({
           <div className="payment-methods">
             <button
               className={`payment-method ${
-                paymentInfo.paymentMethod === "card" ? "active" : ""
+                formState.paymentInfo.paymentMethod === "card" ? "active" : ""
               }`}
               onClick={() => handleInputChange("paymentMethod", "card")}
             >
@@ -875,7 +1022,7 @@ export const Paywall: React.FC<PaywallProps> = ({
                 <span>{t("paywall.card")}</span>
               </div>
               <div className="radio-button">
-                {paymentInfo.paymentMethod === "card" && (
+                {formState.paymentInfo.paymentMethod === "card" && (
                   <svg
                     width="12"
                     height="12"
@@ -902,34 +1049,36 @@ export const Paywall: React.FC<PaywallProps> = ({
               <label>{t("paywall.email")}</label>
               <input
                 type="email"
-                className={`input ${errors.email ? "error" : ""}`}
-                value={paymentInfo.email || ""}
+                className={`input ${formState.errors.email ? "error" : ""}`}
+                value={formState.paymentInfo.email || ""}
                 onChange={(e) => handleInputChange("email", e.target.value)}
                 placeholder="example@email.com"
               />
-              {errors.email && (
-                <span className="error-message">{errors.email}</span>
+              {formState.errors.email && (
+                <span className="error-message">{formState.errors.email}</span>
               )}
             </div>
           </div>
 
           {/* Card form - only show for card payment method */}
-          {paymentInfo.paymentMethod === "card" && (
+          {formState.paymentInfo.paymentMethod === "card" && (
             <div className="card-form">
               <div className="form-group">
                 <label>{t("paywall.cardNumberLabel")}</label>
                 <input
                   type="text"
-                  className={`input ${errors.cardNumber ? "error" : ""}`}
-                  value={paymentInfo.cardNumber || ""}
+                  className={`input ${formState.errors.cardNumber ? "error" : ""}`}
+                  value={formState.paymentInfo.cardNumber || ""}
                   onChange={(e) =>
                     handleInputChange("cardNumber", e.target.value)
                   }
                   placeholder={t("paywall.cardNumber")}
                   maxLength={19}
                 />
-                {errors.cardNumber && (
-                  <span className="error-message">{errors.cardNumber}</span>
+                {formState.errors.cardNumber && (
+                  <span className="error-message">
+                    {formState.errors.cardNumber}
+                  </span>
                 )}
               </div>
 
@@ -938,16 +1087,18 @@ export const Paywall: React.FC<PaywallProps> = ({
                   <label>{t("paywall.expiration")}</label>
                   <input
                     type="text"
-                    className={`input ${errors.expiration ? "error" : ""}`}
-                    value={expirationInput}
+                    className={`input ${formState.errors.expiration ? "error" : ""}`}
+                    value={formState.expirationInput}
                     onChange={(e) =>
                       handleInputChange("expirationMonth", e.target.value)
                     }
                     placeholder={t("paywall.expirationPlaceholder")}
                     maxLength={5}
                   />
-                  {errors.expiration && (
-                    <span className="error-message">{errors.expiration}</span>
+                  {formState.errors.expiration && (
+                    <span className="error-message">
+                      {formState.errors.expiration}
+                    </span>
                   )}
                 </div>
 
@@ -955,14 +1106,16 @@ export const Paywall: React.FC<PaywallProps> = ({
                   <label>{t("paywall.cvc")}</label>
                   <input
                     type="text"
-                    className={`input ${errors.cvc ? "error" : ""}`}
-                    value={paymentInfo.cvc || ""}
+                    className={`input ${formState.errors.cvc ? "error" : ""}`}
+                    value={formState.paymentInfo.cvc || ""}
                     onChange={(e) => handleInputChange("cvc", e.target.value)}
                     placeholder={t("paywall.cvcPlaceholder")}
                     maxLength={4}
                   />
-                  {errors.cvc && (
-                    <span className="error-message">{errors.cvc}</span>
+                  {formState.errors.cvc && (
+                    <span className="error-message">
+                      {formState.errors.cvc}
+                    </span>
                   )}
                 </div>
               </div>
@@ -971,12 +1124,12 @@ export const Paywall: React.FC<PaywallProps> = ({
                 <label>{t("paywall.country")}</label>
                 <select
                   className="input"
-                  value={paymentInfo.country || ""}
+                  value={formState.paymentInfo.country || ""}
                   onChange={(e) => handleInputChange("country", e.target.value)}
                 >
                   {countries.map((country) => (
                     <option key={country.id} value={country.id}>
-                      {t(country.nameKey, country.id)}
+                      {String(t(country.nameKey, country.id))}
                     </option>
                   ))}
                 </select>
@@ -987,7 +1140,9 @@ export const Paywall: React.FC<PaywallProps> = ({
           <div className="alternative-payments">
             <button
               className={`payment-method ${
-                paymentInfo.paymentMethod === "apple-pay" ? "active" : ""
+                formState.paymentInfo.paymentMethod === "apple-pay"
+                  ? "active"
+                  : ""
               }`}
               onClick={() => handleInputChange("paymentMethod", "apple-pay")}
             >
@@ -1003,7 +1158,7 @@ export const Paywall: React.FC<PaywallProps> = ({
                 <span>{t("paywall.applePay")}</span>
               </div>
               <div className="radio-button">
-                {paymentInfo.paymentMethod === "apple-pay" && (
+                {formState.paymentInfo.paymentMethod === "apple-pay" && (
                   <svg
                     width="12"
                     height="12"
@@ -1025,7 +1180,7 @@ export const Paywall: React.FC<PaywallProps> = ({
 
             <button
               className={`payment-method ${
-                paymentInfo.paymentMethod === "paypal" ? "active" : ""
+                formState.paymentInfo.paymentMethod === "paypal" ? "active" : ""
               }`}
               onClick={() => handleInputChange("paymentMethod", "paypal")}
             >
@@ -1041,7 +1196,7 @@ export const Paywall: React.FC<PaywallProps> = ({
                 <span>{t("paywall.paypal")}</span>
               </div>
               <div className="radio-button">
-                {paymentInfo.paymentMethod === "paypal" && (
+                {formState.paymentInfo.paymentMethod === "paypal" && (
                   <svg
                     width="12"
                     height="12"
@@ -1063,13 +1218,13 @@ export const Paywall: React.FC<PaywallProps> = ({
           </div>
         </motion.div>
 
-        {errors.general && (
+        {formState.errors.general && (
           <motion.div
             className="error-message general-error"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
           >
-            {errors.general}
+            {formState.errors.general}
           </motion.div>
         )}
       </div>
@@ -1084,9 +1239,9 @@ export const Paywall: React.FC<PaywallProps> = ({
           <button
             className="btn btn-primary payment-button"
             onClick={handlePayment}
-            disabled={!selectedPlan || isProcessing || loading}
+            disabled={!selectedPlan || processingState.isProcessing || loading}
           >
-            {isProcessing || loading ? (
+            {processingState.isProcessing || loading ? (
               <span className="spinner" />
             ) : (
               t("paywall.getMyPlan")

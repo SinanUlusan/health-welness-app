@@ -170,11 +170,11 @@
 }
 
 .person-image.current-image {
-  background-image: url("../assets/images/fat-body.png");
+  background-image: url("../../assets/images/fat-body.png");
 }
 
 .person-image.goal-image {
-  background-image: url("../assets/images/skinny-body.png");
+  background-image: url("../../assets/images/skinny-body.png");
   background-size: cover, cover;
   background-position: center, center;
   background-repeat: no-repeat, no-repeat;
@@ -1093,12 +1093,9 @@
 }
 
 [dir="rtl"] .plan-content {
-  flex-direction: row;
+  flex-direction: row-reverse;
 }
 
-[dir="rtl"] .plan-info {
-  flex-direction: row;
-}
 
 [dir="rtl"] .plan-name-container {
   align-items: flex-end;

@@ -1,10 +1,8 @@
 // Component exports for easier imports
-export { Header } from "./Header";
-export { LunchSelection } from "./LunchSelection";
-export { WeightInput } from "./WeightInput";
-export { Paywall } from "./Paywall";
-export { PaymentForm } from "./PaymentForm";
-export { StripePaymentForm } from "./StripePaymentForm";
-export { Success } from "./Success";
-export { SecureCheckout } from "./SecureCheckout";
-export { ReviewSlider } from "./ReviewSlider";
+export { Header } from "./header";
+export { LunchSelection, WeightInput } from "./onboarding";
+export { Paywall } from "./paywall";
+export { PaymentForm, StripePaymentForm, SecureCheckout } from "./payment";
+export { Success } from "./success";
+export { ReviewSlider } from "./reviews";
+export { Loading, ErrorFallback, ErrorBoundary } from "./common";

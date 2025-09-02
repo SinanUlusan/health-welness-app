@@ -4,6 +4,10 @@ import {
   usePaymentForm,
   useWeightForm,
   useLunchForm,
+  useEmailForm,
+  useTextInputForm,
+  useAgeForm,
+  useHeightForm,
 } from "../useFormValidation";
 
 // Mock i18next
@@ -33,30 +37,12 @@ describe("Form Validation Hooks", () => {
         cardholderName: "John Doe",
       };
 
-      renderHook(() => usePaymentForm(vi.fn(), initialValues));
+      const { result } = renderHook(() =>
+        usePaymentForm(vi.fn(), initialValues)
+      );
 
-      // Hook should initialize without errors
-      expect(true).toBe(true);
-    });
-
-    it("should validate email format", async () => {
-      renderHook(() => usePaymentForm(vi.fn(), {}));
-
-      // Test that the hook initializes properly
-      expect(() => {
-        // This would be tested with actual form submission
-        // For now, we just check that the hook is properly initialized
-      }).not.toThrow();
-    });
-
-    it("should validate card number format", async () => {
-      renderHook(() => usePaymentForm(vi.fn(), {}));
-
-      // Test that the hook initializes properly
-      expect(() => {
-        // This would be tested with actual form submission
-        // For now, we just check that the hook is properly initialized
-      }).not.toThrow();
+      expect(result.current.control).toBeDefined();
+      expect(result.current.formState).toBeDefined();
     });
   });
 
@@ -75,30 +61,12 @@ describe("Form Validation Hooks", () => {
         unit: "kg" as const,
       };
 
-      renderHook(() => useWeightForm(vi.fn(), initialValues));
+      const { result } = renderHook(() =>
+        useWeightForm(vi.fn(), initialValues)
+      );
 
-      // Hook should initialize without errors
-      expect(true).toBe(true);
-    });
-
-    it("should validate weight range", async () => {
-      renderHook(() => useWeightForm(vi.fn(), {}));
-
-      // Test that the hook initializes properly
-      expect(() => {
-        // This would be tested with actual form submission
-        // For now, we just check that the hook is properly initialized
-      }).not.toThrow();
-    });
-
-    it("should validate weight unit", async () => {
-      renderHook(() => useWeightForm(vi.fn(), {}));
-
-      // Test that the hook initializes properly
-      expect(() => {
-        // This would be tested with actual form submission
-        // For now, we just check that the hook is properly initialized
-      }).not.toThrow();
+      expect(result.current.control).toBeDefined();
+      expect(result.current.formState).toBeDefined();
     });
   });
 
@@ -116,20 +84,99 @@ describe("Form Validation Hooks", () => {
         lunchType: "sandwiches" as const,
       };
 
-      renderHook(() => useLunchForm(initialValues));
+      const { result } = renderHook(() => useLunchForm(initialValues));
 
-      // Hook should initialize without errors
-      expect(true).toBe(true);
+      expect(result.current.control).toBeDefined();
+      expect(result.current.formState).toBeDefined();
+    });
+  });
+
+  describe("useEmailForm", () => {
+    it("should initialize with default values", () => {
+      const { result } = renderHook(() => useEmailForm(vi.fn(), {}));
+
+      expect(result.current.control).toBeDefined();
+      expect(result.current.handleSubmit).toBeDefined();
+      expect(result.current.formState).toBeDefined();
     });
 
-    it("should validate lunch type", async () => {
-      renderHook(() => useLunchForm());
+    it("should initialize with provided values", () => {
+      const initialValues = {
+        email: "test@example.com",
+      };
 
-      // Test that the hook initializes properly
-      expect(() => {
-        // This would be tested with actual form submission
-        // For now, we just check that the hook is properly initialized
-      }).not.toThrow();
+      const { result } = renderHook(() => useEmailForm(vi.fn(), initialValues));
+
+      expect(result.current.control).toBeDefined();
+      expect(result.current.formState).toBeDefined();
+    });
+  });
+
+  describe("useTextInputForm", () => {
+    it("should initialize with default values", () => {
+      const { result } = renderHook(() => useTextInputForm(vi.fn(), {}));
+
+      expect(result.current.control).toBeDefined();
+      expect(result.current.handleSubmit).toBeDefined();
+      expect(result.current.formState).toBeDefined();
+    });
+
+    it("should initialize with provided values", () => {
+      const initialValues = {
+        value: "test value",
+      };
+
+      const { result } = renderHook(() =>
+        useTextInputForm(vi.fn(), initialValues)
+      );
+
+      expect(result.current.control).toBeDefined();
+      expect(result.current.formState).toBeDefined();
+    });
+  });
+
+  describe("useAgeForm", () => {
+    it("should initialize with default values", () => {
+      const { result } = renderHook(() => useAgeForm(vi.fn(), {}));
+
+      expect(result.current.control).toBeDefined();
+      expect(result.current.handleSubmit).toBeDefined();
+      expect(result.current.formState).toBeDefined();
+    });
+
+    it("should initialize with provided values", () => {
+      const initialValues = {
+        age: 25,
+      };
+
+      const { result } = renderHook(() => useAgeForm(vi.fn(), initialValues));
+
+      expect(result.current.control).toBeDefined();
+      expect(result.current.formState).toBeDefined();
+    });
+  });
+
+  describe("useHeightForm", () => {
+    it("should initialize with default values", () => {
+      const { result } = renderHook(() => useHeightForm(vi.fn(), {}));
+
+      expect(result.current.control).toBeDefined();
+      expect(result.current.handleSubmit).toBeDefined();
+      expect(result.current.formState).toBeDefined();
+    });
+
+    it("should initialize with provided values", () => {
+      const initialValues = {
+        height: 170,
+        unit: "cm" as const,
+      };
+
+      const { result } = renderHook(() =>
+        useHeightForm(vi.fn(), initialValues)
+      );
+
+      expect(result.current.control).toBeDefined();
+      expect(result.current.formState).toBeDefined();
     });
   });
 });

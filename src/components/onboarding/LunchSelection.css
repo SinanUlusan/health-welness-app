@@ -157,12 +157,30 @@
   font-weight: 600;
   min-height: 56px;
   border-radius: var(--radius-xl);
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.next-button:hover {
+  background-color: var(--color-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
 .next-button.disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none !important;
+}
+
+.next-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  background-color: var(--color-primary);
 }
 
 .next-button:disabled:hover {

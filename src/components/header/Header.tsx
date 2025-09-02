@@ -1,13 +1,13 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { useAppState } from "../hooks/useAppState";
+import { useAppState } from "../../hooks/useAppState";
 import {
   trackUserInteraction,
   trackLanguageChange,
-} from "../services/analytics";
-import UKFlag from "../assets/images/svg/united-kingdom.svg";
-import SaudiFlag from "../assets/images/svg/saudi-arabia.svg";
-import KompanionLogo from "../assets/images/kompanion-logo.png";
+} from "../../services/analytics";
+import UKFlag from "../../assets/images/svg/united-kingdom.svg";
+import SaudiFlag from "../../assets/images/svg/saudi-arabia.svg";
+import KompanionLogo from "../../assets/images/kompanion-logo.png";
 import "./Header.css";
 
 interface HeaderProps {

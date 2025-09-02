@@ -33,6 +33,10 @@
   border-radius: 50%;
 }
 
+[dir="rtl"] .back-button {
+  transform: scaleX(-1);
+}
+
 .back-button:hover {
   background-color: var(--color-border-light);
 }
@@ -44,16 +48,6 @@
 /* RTL back button adjustments */
 [dir="rtl"] .back-button svg {
   transform: rotate(180deg);
-}
-
-/* Alternative RTL approach - flip the entire button */
-[dir="rtl"] .back-button {
-  transform: scaleX(-1);
-}
-
-/* RTL header layout adjustments */
-[dir="rtl"] .header-content {
-  flex-direction: row-reverse;
 }
 
 /* Logo styles */

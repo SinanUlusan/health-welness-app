@@ -1,44 +1,76 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { trackUserInteraction } from "../services/analytics";
-import type { Review } from "../types";
-import { apiService } from "../services/api";
+import { trackUserInteraction } from "../../services/analytics";
+import type { Review } from "../../types";
+import { apiService } from "../../services/api";
 import "./ReviewSlider.css";
 
 interface ReviewSliderProps {
   className?: string;
 }
 
-export const ReviewSlider: React.FC<ReviewSliderProps> = ({
+// Loading fallback component
+const ReviewSliderLoading: React.FC<{ className?: string }> = ({
+  className = "",
+}) => (
+  <div className={`review-slider ${className}`}>
+    <div className="review-slider-container">
+      <div className="review-cards-wrapper">
+        <div className="review-card loading">
+          <div className="review-card-content">
+            <div className="review-header">
+              <span className="review-emoji">⏳</span>
+              <h4 className="review-title">Loading reviews...</h4>
+            </div>
+            <div className="review-stars">
+              {Array.from({ length: 5 }, (_, i) => (
+                <span key={i} className="star empty">
+                  ★
+                </span>
+              ))}
+            </div>
+            <p className="review-content">
+              Please wait while we load the latest reviews...
+            </p>
+            <div className="review-footer">
+              <span className="reviewer-name">Loading...</span>
+              <span className="review-date">• Now</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+// Main ReviewSlider component with traditional data fetching
+const ReviewSliderContent: React.FC<ReviewSliderProps> = ({
   className = "",
 }) => {
   const { t } = useTranslation();
-  const [reviews, setReviews] = useState<Review[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [dragOffset, setDragOffset] = useState(0);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const sliderRef = useRef<HTMLDivElement>(null);
 
-  // Load reviews from API
+  // Traditional data fetching with useEffect
   useEffect(() => {
     const loadReviews = async () => {
       try {
         setIsLoading(true);
-        setError(null);
         const response = await apiService.getReviews();
         if (response.success && response.data) {
           setReviews(response.data);
         } else {
-          setError("Failed to load reviews");
+          console.error("Failed to load reviews");
         }
-      } catch (err) {
-        setError("Error loading reviews");
-        console.error("Error loading reviews:", err);
+      } catch (error) {
+        console.error("Error loading reviews:", error);
       } finally {
         setIsLoading(false);
       }
@@ -46,6 +78,11 @@ export const ReviewSlider: React.FC<ReviewSliderProps> = ({
 
     loadReviews();
   }, []);
+
+  // Show loading state while data is being fetched
+  if (isLoading) {
+    return <ReviewSliderLoading className={className} />;
+  }
 
   // Get translated review data
   const getTranslatedReview = (review: Review) => {
@@ -125,73 +162,6 @@ export const ReviewSlider: React.FC<ReviewSliderProps> = ({
       trackUserInteraction("review_card", `click_review_${index + 1}`);
     }
   };
-
-  if (isLoading) {
-    return (
-      <div className={`review-slider ${className}`}>
-        <div className="review-slider-container">
-          <div className="review-cards-wrapper">
-            <div className="review-card loading">
-              <div className="review-card-content">
-                <div className="review-header">
-                  <span className="review-emoji">⏳</span>
-                  <h4 className="review-title">Loading reviews...</h4>
-                </div>
-                <div className="review-stars">
-                  {Array.from({ length: 5 }, (_, i) => (
-                    <span key={i} className="star empty">
-                      ★
-                    </span>
-                  ))}
-                </div>
-                <p className="review-content">
-                  Please wait while we load the latest reviews...
-                </p>
-                <div className="review-footer">
-                  <span className="reviewer-name">Loading...</span>
-                  <span className="review-date">• Now</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || reviews.length === 0) {
-    return (
-      <div className={`review-slider ${className}`}>
-        <div className="review-slider-container">
-          <div className="review-cards-wrapper">
-            <div className="review-card error">
-              <div className="review-card-content">
-                <div className="review-header">
-                  <span className="review-emoji">⚠️</span>
-                  <h4 className="review-title">Reviews unavailable</h4>
-                </div>
-                <div className="review-stars">
-                  {Array.from({ length: 5 }, (_, i) => (
-                    <span key={i} className="star empty">
-                      ★
-                    </span>
-                  ))}
-                </div>
-                <p className="review-content">
-                  {error ||
-                    "No reviews available at the moment. Please try again later."}
-                </p>
-                <div className="review-footer">
-                  <span className="reviewer-name">System</span>
-                  <span className="review-date">• Now</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // Calculate card width based on screen size
   const getCardWidth = () => {
@@ -303,4 +273,9 @@ export const ReviewSlider: React.FC<ReviewSliderProps> = ({
       </div>
     </div>
   );
+};
+
+// Main exported component
+export const ReviewSlider: React.FC<ReviewSliderProps> = (props) => {
+  return <ReviewSliderContent {...props} />;
 };

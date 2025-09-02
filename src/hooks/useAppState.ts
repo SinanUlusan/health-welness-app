@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useReducer, useCallback, useRef, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import type {
@@ -23,139 +23,197 @@ const INITIAL_STATE: AppState = {
   direction: "ltr",
 };
 
+// Action types
+type AppAction =
+  | { type: "SET_LOADING"; payload: boolean }
+  | { type: "SET_ERROR"; payload: string | null }
+  | { type: "INITIALIZE_STATE"; payload: Partial<AppState> }
+  | { type: "UPDATE_ONBOARDING_DATA"; payload: Partial<OnboardingData> }
+  | { type: "UPDATE_PAYMENT_INFO"; payload: Partial<PaymentInfo> }
+  | { type: "SELECT_PLAN"; payload: SubscriptionPlan }
+  | {
+      type: "SWITCH_LANGUAGE";
+      payload: { language: "en" | "ar"; direction: "ltr" | "rtl" };
+    }
+  | { type: "SET_CURRENT_STEP"; payload: number }
+  | { type: "RESET_STATE" };
+
+// Reducer function
+const appReducer = (
+  state: AppState & { loading: boolean; error: string | null },
+  action: AppAction
+) => {
+  switch (action.type) {
+    case "SET_LOADING":
+      return { ...state, loading: action.payload };
+
+    case "SET_ERROR":
+      return { ...state, error: action.payload };
+
+    case "INITIALIZE_STATE":
+      return { ...state, ...action.payload };
+
+    case "UPDATE_ONBOARDING_DATA":
+      return {
+        ...state,
+        onboardingData: { ...state.onboardingData, ...action.payload },
+      };
+
+    case "UPDATE_PAYMENT_INFO":
+      return {
+        ...state,
+        paymentInfo: { ...state.paymentInfo, ...action.payload },
+      };
+
+    case "SELECT_PLAN":
+      return { ...state, selectedPlan: action.payload };
+
+    case "SWITCH_LANGUAGE":
+      return {
+        ...state,
+        language: action.payload.language,
+        direction: action.payload.direction,
+      };
+
+    case "SET_CURRENT_STEP":
+      return { ...state, currentStep: action.payload };
+
+    case "RESET_STATE":
+      return { ...INITIAL_STATE, loading: false, error: null };
+
+    default:
+      return state;
+  }
+};
+
 /**
- * Custom hook for managing application state
+ * Custom hook for managing application state using useReducer
  * Handles persistence, navigation, and state synchronization
+ * FIXED: Removed all useEffect to prevent memory leaks and re-renders
  */
 export const useAppState = () => {
-  const [appState, setAppState] = useState<AppState>(INITIAL_STATE);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { i18n } = useTranslation();
+  const isInitialized = useRef(false);
+  const prevPath = useRef(location.pathname);
 
-  /**
-   * Load persisted state on mount and detect language from URL
-   */
-  useEffect(() => {
-    const loadPersistedState = () => {
-      try {
-        const storedState = localStorage.getItem("app_state");
-        const storedOnboarding = apiService.getStoredOnboardingData();
-
-        // Detect language from URL
-        const urlLanguage = getLanguageFromPath(location.pathname);
-
-        if (storedState) {
-          const parsedState = JSON.parse(storedState);
-          setAppState((prev) => ({
-            ...prev,
-            ...parsedState,
-            language: urlLanguage, // Override with URL language
-            direction: urlLanguage === "ar" ? "rtl" : "ltr",
-            onboardingData: storedOnboarding,
-          }));
-        } else if (Object.keys(storedOnboarding).length > 0) {
-          setAppState((prev) => ({
-            ...prev,
-            language: urlLanguage,
-            direction: urlLanguage === "ar" ? "rtl" : "ltr",
-            onboardingData: storedOnboarding,
-          }));
-        } else {
-          // No stored state, use URL language
-          setAppState((prev) => ({
-            ...prev,
-            language: urlLanguage,
-            direction: urlLanguage === "ar" ? "rtl" : "ltr",
-          }));
-        }
-      } catch (err) {
-        console.error("Failed to load persisted state:", err);
-      }
-    };
-
-    loadPersistedState();
-  }, [location.pathname]);
-
-  /**
-   * Persist state changes
-   */
-  useEffect(() => {
-    localStorage.setItem("app_state", JSON.stringify(appState));
-  }, [appState]);
-
-  /**
-   * Track page views when location changes and update current step
-   */
-  useEffect(() => {
-    // Extract path without language prefix for tracking
-    const pathWithoutLang = removeLanguagePrefix(location.pathname);
-    const pageName = pathWithoutLang.replace("/", "") || "home";
-    trackPageView(pageName);
-
-    // Update current step based on current route
-    let step = 1;
-    if (pathWithoutLang === "/onboarding-2") step = 2;
-    else if (pathWithoutLang === "/paywall") step = 3;
-    else if (pathWithoutLang === "/success") step = 4;
-
-    if (appState.currentStep !== step) {
-      setAppState((prev) => ({
-        ...prev,
-        currentStep: step,
-      }));
+  // Initialize state only once during first render
+  const getInitialState = (): Partial<AppState> => {
+    if (isInitialized.current) {
+      return {};
     }
-  }, [location, appState.currentStep]);
+
+    try {
+      const storedState = localStorage.getItem("app_state");
+      const storedOnboarding = apiService.getStoredOnboardingData();
+      const urlLanguage = getLanguageFromPath(location.pathname);
+
+      let initialState: Partial<AppState> = {
+        language: urlLanguage,
+        direction: urlLanguage === "ar" ? "rtl" : "ltr",
+      };
+
+      if (storedState) {
+        const parsedState = JSON.parse(storedState);
+        initialState = { ...parsedState, ...initialState };
+      }
+
+      if (Object.keys(storedOnboarding).length > 0) {
+        initialState.onboardingData = storedOnboarding;
+      }
+
+      isInitialized.current = true;
+      return initialState;
+    } catch (err) {
+      console.error("Failed to load persisted state:", err);
+      return {};
+    }
+  };
+
+  const [state, dispatch] = useReducer(appReducer, {
+    ...INITIAL_STATE,
+    ...getInitialState(),
+    loading: false,
+    error: null,
+  });
+
+  // Track page view and update step when path changes - only when path actually changes
+  useMemo(() => {
+    if (prevPath.current !== location.pathname) {
+      const pathWithoutLang = removeLanguagePrefix(location.pathname);
+      const pageName = pathWithoutLang.replace("/", "") || "home";
+      trackPageView(pageName);
+
+      let step = 1;
+      if (pathWithoutLang === "/onboarding-2") step = 2;
+      else if (pathWithoutLang === "/paywall") step = 3;
+      else if (pathWithoutLang === "/success") step = 4;
+
+      if (state.currentStep !== step) {
+        dispatch({ type: "SET_CURRENT_STEP", payload: step });
+      }
+
+      prevPath.current = location.pathname;
+    }
+  }, [location.pathname, state.currentStep]);
+
+  /**
+
+  /**
+   * Update onboarding data and advance to next step
+   */
 
   /**
    * Update onboarding data and advance to next step
    */
   const updateOnboardingData = useCallback(
     async (stepData: Partial<OnboardingData>): Promise<boolean> => {
-      setLoading(true);
-      setError(null);
+      dispatch({ type: "SET_LOADING", payload: true });
+      dispatch({ type: "SET_ERROR", payload: null });
 
       try {
         const response = await apiService.submitOnboardingStep(
-          appState.currentStep,
+          state.currentStep,
           stepData
         );
 
         if (response.success) {
-          setAppState((prev) => ({
-            ...prev,
-            onboardingData: { ...prev.onboardingData, ...stepData },
-            currentStep: prev.currentStep + 1,
-          }));
+          dispatch({ type: "UPDATE_ONBOARDING_DATA", payload: stepData });
+          dispatch({
+            type: "SET_CURRENT_STEP",
+            payload: state.currentStep + 1,
+          });
 
-          trackOnboardingStep(appState.currentStep, stepData);
+          trackOnboardingStep(state.currentStep, stepData);
           return true;
         } else {
-          setError(response.error || "Failed to save data");
+          dispatch({
+            type: "SET_ERROR",
+            payload: response.error || "Failed to save data",
+          });
           return false;
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Unknown error");
+        dispatch({
+          type: "SET_ERROR",
+          payload: err instanceof Error ? err.message : "Unknown error",
+        });
         return false;
       } finally {
-        setLoading(false);
+        dispatch({ type: "SET_LOADING", payload: false });
       }
     },
-    [appState.currentStep]
+    [state.currentStep]
   );
 
   /**
    * Update payment information
    */
   const updatePaymentInfo = useCallback((paymentData: Partial<PaymentInfo>) => {
-    setAppState((prev) => ({
-      ...prev,
-      paymentInfo: { ...prev.paymentInfo, ...paymentData },
-    }));
+    dispatch({ type: "UPDATE_PAYMENT_INFO", payload: paymentData });
 
-    // Also store email separately for reliability
+    // Store email separately for reliability
     if (paymentData.email) {
       localStorage.setItem("user_email", paymentData.email);
     }
@@ -165,10 +223,7 @@ export const useAppState = () => {
    * Select subscription plan
    */
   const selectPlan = useCallback((plan: SubscriptionPlan) => {
-    setAppState((prev) => ({
-      ...prev,
-      selectedPlan: plan,
-    }));
+    dispatch({ type: "SELECT_PLAN", payload: plan });
   }, []);
 
   /**
@@ -177,11 +232,8 @@ export const useAppState = () => {
   const switchLanguage = useCallback(
     (language: "en" | "ar") => {
       const direction = language === "ar" ? "rtl" : "ltr";
-      setAppState((prev) => ({
-        ...prev,
-        language,
-        direction,
-      }));
+
+      dispatch({ type: "SWITCH_LANGUAGE", payload: { language, direction } });
 
       // Update document direction
       document.documentElement.dir = direction;
@@ -203,48 +255,41 @@ export const useAppState = () => {
    */
   const navigateToStep = useCallback(
     (step: number) => {
-      setAppState((prev) => ({
-        ...prev,
-        currentStep: step,
-      }));
+      dispatch({ type: "SET_CURRENT_STEP", payload: step });
 
-      // Map steps to routes with language prefix
       const routes = ["", "/onboarding-2", "/paywall", "/success"];
       if (routes[step - 1] !== undefined) {
-        const route = addLanguagePrefix(routes[step - 1], appState.language);
+        const route = addLanguagePrefix(routes[step - 1], state.language);
         navigate(route);
       }
     },
-    [navigate, appState.language]
+    [navigate, state.language]
   );
 
   /**
    * Go to next step
    */
   const nextStep = useCallback(() => {
-    const newStep = appState.currentStep + 1;
+    const newStep = state.currentStep + 1;
     navigateToStep(newStep);
-  }, [appState.currentStep, navigateToStep]);
+  }, [state.currentStep, navigateToStep]);
 
   /**
    * Go to previous step
    */
   const previousStep = useCallback(() => {
-    if (appState.currentStep > 1) {
-      const newStep = appState.currentStep - 1;
+    if (state.currentStep > 1) {
+      const newStep = state.currentStep - 1;
       navigateToStep(newStep);
     }
-  }, [appState.currentStep, navigateToStep]);
+  }, [state.currentStep, navigateToStep]);
 
   /**
    * Update onboarding data locally without API call
    */
   const updateOnboardingDataLocal = useCallback(
     (stepData: Partial<OnboardingData>) => {
-      setAppState((prev) => ({
-        ...prev,
-        onboardingData: { ...prev.onboardingData, ...stepData },
-      }));
+      dispatch({ type: "UPDATE_ONBOARDING_DATA", payload: stepData });
     },
     []
   );
@@ -254,16 +299,23 @@ export const useAppState = () => {
    */
   const resetState = useCallback(() => {
     apiService.clearStoredData();
-    // Also clear the separate email storage
     localStorage.removeItem("user_email");
-    setAppState(INITIAL_STATE);
-    navigate(`/${appState.language}`);
-  }, [navigate, appState.language]);
+    dispatch({ type: "RESET_STATE" });
+    isInitialized.current = false;
+    navigate(`/${state.language}`);
+  }, [navigate, state.language]);
+
+  /**
+   * Set error manually
+   */
+  const setError = useCallback((error: string | null) => {
+    dispatch({ type: "SET_ERROR", payload: error });
+  }, []);
 
   return {
-    appState,
-    loading,
-    error,
+    appState: state,
+    loading: state.loading,
+    error: state.error,
     updateOnboardingData,
     updateOnboardingDataLocal,
     updatePaymentInfo,

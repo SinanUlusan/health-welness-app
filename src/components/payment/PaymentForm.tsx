@@ -5,13 +5,13 @@ import {
   usePaymentForm,
   useFormHelpers,
   useFormFormatters,
-} from "../hooks/useFormValidation";
+} from "../../hooks/useFormValidation";
 import {
   trackPaymentMethodSelection,
   trackFormSubmission,
-} from "../services/analytics";
-import type { PaymentFormData } from "../schemas/validation";
-import type { PaymentInfo } from "../types";
+} from "../../services/analytics";
+import type { PaymentFormData } from "../../schemas/validation";
+import type { PaymentInfo } from "../../types";
 
 interface PaymentFormProps {
   onSubmit: (data: PaymentFormData) => void;

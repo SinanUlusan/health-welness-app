@@ -1,10 +1,14 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { Controller, useWatch, useFormState } from "react-hook-form";
-import { trackUserInteraction, trackWeightInput } from "../services/analytics";
-import { useWeightForm, useFormHelpers } from "../hooks/useFormValidation";
-import type { WeightWithUnitFormData } from "../schemas/validation";
+import {
+  trackUserInteraction,
+  trackWeightInput,
+} from "../../services/analytics";
+import { useWeightForm, useFormHelpers } from "../../hooks/useFormValidation";
+import type { WeightWithUnitFormData } from "../../schemas/validation";
+import { FormActions } from "./FormActions";
 import "./WeightInput.css";
 
 interface WeightInputProps {
@@ -40,12 +44,24 @@ export const WeightInput: React.FC<WeightInputProps> = ({
   // Use useWatch and useFormState hooks separately to avoid ESLint warnings
   const watchedWeight = useWatch({ control, name: "weight" });
   const watchedUnit = useWatch({ control, name: "unit" });
-  const { errors, isValid, touchedFields } = useFormState({ control });
+  const { errors, touchedFields } = useFormState({ control });
+
+  // Handle weight change with immediate callback
+  const handleWeightChange = (newWeight: number, currentUnit: "kg" | "lbs") => {
+    if (newWeight > 0) {
+      onWeightChange(newWeight, currentUnit);
+    }
+  };
 
   // Handle unit toggle
   const handleUnitToggle = (unit: "kg" | "lbs") => {
     setValue("unit", unit, { shouldValidate: true });
     trackUserInteraction("weight_unit", `select_${unit}`);
+
+    // Call onWeightChange with current weight and new unit
+    if (watchedWeight > 0) {
+      onWeightChange(watchedWeight, unit);
+    }
   };
 
   // Handle form submission
@@ -56,15 +72,7 @@ export const WeightInput: React.FC<WeightInputProps> = ({
     onNext();
   };
 
-  // Update parent when weight or unit changes (for real-time sync)
-  useEffect(() => {
-    if (watchedWeight > 0 && isValid) {
-      onWeightChange(watchedWeight, watchedUnit);
-    }
-  }, [watchedWeight, watchedUnit, isValid, onWeightChange]);
-
   const weightError = getFieldError(errors, "weight");
-  const isValidInput = isValid && watchedWeight > 0;
 
   return (
     <div className="weight-input">
@@ -99,7 +107,13 @@ export const WeightInput: React.FC<WeightInputProps> = ({
                         "weight",
                         "weight-input-field"
                       )}
-                      value={field.value || ""}
+                      value={
+                        field.value !== undefined &&
+                        field.value !== null &&
+                        field.value !== 0
+                          ? field.value.toString()
+                          : ""
+                      }
                       onChange={(e) => {
                         const value = e.target.value;
                         // Only allow numbers and limit to 3 digits
@@ -107,8 +121,18 @@ export const WeightInput: React.FC<WeightInputProps> = ({
                           value === "" ||
                           (/^\d{1,3}$/.test(value) && parseInt(value) <= 999)
                         ) {
-                          field.onChange(value ? parseInt(value) : 0);
+                          // Set to 0 when empty, otherwise parse the number
+                          const newWeight = value === "" ? 0 : parseInt(value);
+                          field.onChange(newWeight);
                           trackUserInteraction("weight_input", "typing");
+
+                          // Call onWeightChange only when there's a valid weight
+                          if (newWeight > 0) {
+                            handleWeightChange(newWeight, watchedUnit);
+                          }
+                        } else {
+                          // Reset to 0 for invalid input
+                          field.onChange(0);
                         }
                       }}
                       onBlur={field.onBlur}
@@ -161,20 +185,13 @@ export const WeightInput: React.FC<WeightInputProps> = ({
         </motion.div>
       </div>
 
-      <motion.div
-        className="footer"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.4 }}
-      >
-        <button
-          className={`btn btn-primary ${!isValidInput ? "disabled" : ""}`}
-          onClick={handleSubmit(onSubmit)}
-          disabled={!isValidInput || loading}
-        >
-          {loading ? <div className="loading-spinner" /> : t("common.continue")}
-        </button>
-      </motion.div>
+      <FormActions
+        form={form}
+        onSubmit={onSubmit}
+        loading={loading}
+        buttonText={t("common.continue")}
+        trackingEvent="onboarding_step_2"
+      />
     </div>
   );
 };

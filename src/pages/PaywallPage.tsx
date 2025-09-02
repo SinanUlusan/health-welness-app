@@ -1,10 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
-import { Header } from "../components/Header";
-import { Paywall } from "../components/Paywall";
+import { Header, Paywall } from "../components";
 import { useAppState } from "../hooks/useAppState";
 import { addLanguagePrefix } from "../utils/urlUtils";
 import { trackPageView } from "../services/analytics";
+
+// Loading fallback component
+const PaywallLoading: React.FC = () => (
+  <div className="paywall-loading">
+    <div className="loading-spinner">
+      <div className="spinner"></div>
+      <p>Loading subscription plans...</p>
+    </div>
+  </div>
+);
 
 /**
  * Paywall Page - Subscription and Payment
@@ -32,11 +41,13 @@ export const PaywallPage: React.FC = () => {
   return (
     <>
       {!showSecureCheckout && <Header showBack onBack={handleBack} />}
-      <Paywall
-        onPaymentComplete={handlePaymentComplete}
-        loading={loading}
-        onSecureCheckoutToggle={setShowSecureCheckout}
-      />
+      <Suspense fallback={<PaywallLoading />}>
+        <Paywall
+          onPaymentComplete={handlePaymentComplete}
+          loading={loading}
+          onSecureCheckoutToggle={setShowSecureCheckout}
+        />
+      </Suspense>
     </>
   );
 };

@@ -282,5 +282,10 @@
     "downloadOn": "تحميل من",
     "getItOn": "احصل عليه من",
     "backToHome": "العودة للصفحة الرئيسية"
+  },
+  "errorFallback": {
+    "title": "حدث خطأ ما",
+    "description": "تم إخطارنا ونحن نعمل على إصلاح المشكلة.",
+    "refreshButton": "تحديث الصفحة"
   }
 }

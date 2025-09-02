@@ -1,12 +1,12 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { trackUserInteraction } from "../services/analytics";
-import successIcon from "../assets/images/success-icon.png";
-import starIcon from "../assets/images/star-icon.png";
-import securityIcon from "../assets/images/ic-security.png";
-import appleLogo from "../assets/images/apple-logo.png";
-import googlePlayLogo from "../assets/images/google-play-logo.png";
+import { trackUserInteraction } from "../../services/analytics";
+import successIcon from "../../assets/images/success-icon.png";
+import starIcon from "../../assets/images/star-icon.png";
+import securityIcon from "../../assets/images/ic-security.png";
+import appleLogo from "../../assets/images/apple-logo.png";
+import googlePlayLogo from "../../assets/images/google-play-logo.png";
 import "./Success.css";
 
 interface SuccessProps {
@@ -21,31 +21,25 @@ interface SuccessProps {
 export const Success: React.FC<SuccessProps> = ({ userEmail, onGoHome }) => {
   const { t } = useTranslation();
 
-  useEffect(() => {
-    // Track successful completion
-    trackUserInteraction("success_page", "view");
+  // Render olduğunda direkt track et
+  trackUserInteraction("success_page", "view");
 
-    // Handle browser back button
-    const handlePopState = (event: PopStateEvent) => {
-      event.preventDefault();
-      if (onGoHome) {
-        onGoHome();
-      } else {
-        // Fallback to reload homepage
-        window.location.href = "/";
-      }
-    };
+  // Handle browser back button
+  const handlePopState = (event: PopStateEvent) => {
+    event.preventDefault();
+    if (onGoHome) {
+      onGoHome();
+    } else {
+      // Fallback to reload homepage
+      window.location.href = "/";
+    }
+  };
 
-    // Add popstate listener for back button
-    window.addEventListener("popstate", handlePopState);
+  // Add popstate listener for back button
+  window.addEventListener("popstate", handlePopState);
 
-    // Push a new state to handle back button
-    window.history.pushState({ page: "success" }, "", window.location.href);
-
-    return () => {
-      window.removeEventListener("popstate", handlePopState);
-    };
-  }, [onGoHome]);
+  // Push a new state to handle back button
+  window.history.pushState({ page: "success" }, "", window.location.href);
 
   const handleDownloadClick = (platform: "ios" | "android") => {
     trackUserInteraction("download_button", `click_${platform}`);

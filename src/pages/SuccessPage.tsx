@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
-import { Header } from "../components/Header";
-import { Success } from "../components/Success";
+import { Header, Success } from "../components";
 import { useAppState } from "../hooks/useAppState";
 import { trackPageView, trackConversion } from "../services/analytics";
 

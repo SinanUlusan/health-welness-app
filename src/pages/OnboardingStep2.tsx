@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Header } from "../components/Header";
-import { WeightInput } from "../components/WeightInput";
+import { Header, WeightInput } from "../components";
 import { useAppState } from "../hooks/useAppState";
 import { addLanguagePrefix } from "../utils/urlUtils";
 import { trackPageView, trackOnboardingStep } from "../services/analytics";
