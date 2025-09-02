@@ -19,7 +19,9 @@ export const getBaseUrl = (): string => {
   if (isDevelopment) {
     return "http://localhost:3001";
   } else if (isProduction) {
-    return "https://health-welness-app.vercel.app";
+    // In production, return an invalid URL to trigger fallback behavior
+    // This will make the API service use its fallback methods instead of trying to call non-existent endpoints
+    return "https://invalid-api-url-for-production";
   } else {
     // Fallback to localhost for other environments
     return "http://localhost:3001";

@@ -3,6 +3,13 @@ import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import appOfTheDayImage from "../assets/images/app-of-the-day.png";
+import cardIconImage from "../assets/images/card-icon.png";
+import appleLogoBlackImage from "../assets/images/apple-logo-black.png";
+import paypalLogoImage from "../assets/images/paypal-logo.png";
+import testimonialBeforeImage from "../assets/images/testimonial-before.png";
+import testimonialAfterImage from "../assets/images/testimonial-after.png";
+import fatBodyImage from "../assets/images/fat-body.png";
+import skinnyBodyImage from "../assets/images/skinny-body.png";
 import type {
   SubscriptionPlan,
   PaymentInfo,
@@ -59,6 +66,22 @@ export const Paywall: React.FC<PaywallProps> = ({
 
   // Get selected plan from global state
   const selectedPlan = appState.selectedPlan;
+
+  // Helper function to get testimonial image
+  const getTestimonialImage = (imageName: string) => {
+    switch (imageName) {
+      case "testimonial-before.png":
+        return testimonialBeforeImage;
+      case "testimonial-after.png":
+        return testimonialAfterImage;
+      case "fat-body.png":
+        return fatBodyImage;
+      case "skinny-body.png":
+        return skinnyBodyImage;
+      default:
+        return testimonialBeforeImage; // fallback
+    }
+  };
 
   // Function to get translated plan name and duration
   const getTranslatedPlanInfo = (plan: SubscriptionPlan) => {
@@ -761,13 +784,13 @@ export const Paywall: React.FC<PaywallProps> = ({
                   <div
                     className="testimonial-image before-image"
                     style={{
-                      backgroundImage: `url('/src/assets/images/${testimonials[currentTestimonialIndex].beforeImage}')`,
+                      backgroundImage: `url(${getTestimonialImage(testimonials[currentTestimonialIndex].beforeImage)})`,
                     }}
                   ></div>
                   <div
                     className="testimonial-image after-image"
                     style={{
-                      backgroundImage: `url('/src/assets/images/${testimonials[currentTestimonialIndex].afterImage}')`,
+                      backgroundImage: `url(${getTestimonialImage(testimonials[currentTestimonialIndex].afterImage)})`,
                     }}
                   ></div>
                   <div className="testimonial-name">
@@ -847,12 +870,7 @@ export const Paywall: React.FC<PaywallProps> = ({
             >
               <div className="payment-method-content">
                 <span className="payment-icon">
-                  <img
-                    src="/src/assets/images/card-icon.png"
-                    alt="Card"
-                    width="16"
-                    height="16"
-                  />
+                  <img src={cardIconImage} alt="Card" width="16" height="16" />
                 </span>
                 <span>{t("paywall.card")}</span>
               </div>
@@ -976,7 +994,7 @@ export const Paywall: React.FC<PaywallProps> = ({
               <div className="payment-method-content">
                 <span className="payment-icon">
                   <img
-                    src="/src/assets/images/apple-logo-black.png"
+                    src={appleLogoBlackImage}
                     alt="Apple Pay"
                     width="16"
                     height="16"
@@ -1014,7 +1032,7 @@ export const Paywall: React.FC<PaywallProps> = ({
               <div className="payment-method-content">
                 <span className="payment-icon">
                   <img
-                    src="/src/assets/images/paypal-logo.png"
+                    src={paypalLogoImage}
                     alt="PayPal"
                     width="16"
                     height="16"

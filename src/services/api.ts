@@ -8,7 +8,7 @@ import type {
   LunchOption,
   Country,
 } from "../types";
-import { getBaseUrl } from "../utils/config";
+import { getBaseUrl, isProduction } from "../utils/config";
 
 /**
  * HTTP API service for handling data persistence and validation
@@ -24,6 +24,11 @@ class ApiService {
     step: number,
     data: Partial<OnboardingData>
   ): Promise<ApiResponse> {
+    // In production, use fallback directly since there's no API
+    if (isProduction()) {
+      return this.submitOnboardingStepFallback(step, data);
+    }
+
     try {
       // Validate the data based on step
       if (step === 1 && !data.lunchType) {
@@ -119,6 +124,11 @@ class ApiService {
    * Get available subscription plans
    */
   async getPlans(): Promise<ApiResponse<SubscriptionPlan[]>> {
+    // In production, use fallback directly since there's no API
+    if (isProduction()) {
+      return this.getPlansFallback();
+    }
+
     try {
       const response = await fetch(`${this.baseUrl}/plans`);
 
@@ -178,6 +188,11 @@ class ApiService {
    * Get available subscription plans
    */
   async getSubscriptionPlans(): Promise<ApiResponse<SubscriptionPlan[]>> {
+    // In production, use fallback directly since there's no API
+    if (isProduction()) {
+      return this.getSubscriptionPlansFallback();
+    }
+
     try {
       const response = await fetch(`${this.baseUrl}/subscriptionPlans`);
 
@@ -240,6 +255,11 @@ class ApiService {
    * Get available lunch types
    */
   async getLunchTypes(): Promise<ApiResponse<LunchOption[]>> {
+    // In production, use fallback directly since there's no API
+    if (isProduction()) {
+      return this.getLunchTypesFallback();
+    }
+
     try {
       const response = await fetch(`${this.baseUrl}/lunchTypes`);
 
@@ -304,6 +324,11 @@ class ApiService {
    * Get testimonials
    */
   async getTestimonials(): Promise<ApiResponse<Testimonial[]>> {
+    // In production, use fallback directly since there's no API
+    if (isProduction()) {
+      return this.getTestimonialsFallback();
+    }
+
     try {
       const response = await fetch(`${this.baseUrl}/testimonials`);
 
@@ -380,6 +405,11 @@ class ApiService {
    * Get reviews for the review slider
    */
   async getReviews(): Promise<ApiResponse<Review[]>> {
+    // In production, use fallback directly since there's no API
+    if (isProduction()) {
+      return this.getReviewsFallback();
+    }
+
     try {
       const response = await fetch(`${this.baseUrl}/reviews`);
 
@@ -458,6 +488,11 @@ class ApiService {
    * Get available countries
    */
   async getCountries(): Promise<ApiResponse<Country[]>> {
+    // In production, use fallback directly since there's no API
+    if (isProduction()) {
+      return this.getCountriesFallback();
+    }
+
     try {
       const response = await fetch(`${this.baseUrl}/countries`);
 
@@ -549,6 +584,11 @@ class ApiService {
     paymentInfo: PaymentInfo,
     planId: string
   ): Promise<ApiResponse> {
+    // In production, use fallback directly since there's no API
+    if (isProduction()) {
+      return this.processPaymentFallback(paymentInfo, planId);
+    }
+
     try {
       // Validate payment information before sending
       this.validatePaymentInfo(paymentInfo);
@@ -748,6 +788,11 @@ class ApiService {
    * Submit payment
    */
   async submitPayment(paymentInfo: PaymentInfo): Promise<ApiResponse> {
+    // In production, use fallback directly since there's no API
+    if (isProduction()) {
+      return this.submitPaymentFallback(paymentInfo);
+    }
+
     try {
       // Validate payment information
       this.validatePaymentInfo(paymentInfo);
