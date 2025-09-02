@@ -20,7 +20,7 @@ export const initializeAnalytics = (): void => {
   }
 
   // Check if GA is already initialized
-  if (typeof window !== "undefined" && (window as Window).gtag) {
+  if (typeof window !== "undefined" && typeof window.gtag === "function") {
     return;
   }
 
@@ -31,27 +31,18 @@ export const initializeAnalytics = (): void => {
   document.head.appendChild(script);
 
   // Initialize dataLayer and gtag
-  (window as unknown as { dataLayer: unknown[] }).dataLayer =
-    (window as unknown as { dataLayer: unknown[] }).dataLayer || [];
-  (window as unknown as { gtag: (...args: unknown[]) => void }).gtag =
-    function gtag(...args: unknown[]) {
-      (window as unknown as { dataLayer: unknown[] }).dataLayer.push(args);
-    };
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function gtag(...args: unknown[]) {
+    window.dataLayer.push(args);
+  };
 
-  (window as unknown as { gtag: (...args: unknown[]) => void }).gtag(
-    "js",
-    new Date()
-  );
-  (window as unknown as { gtag: (...args: unknown[]) => void }).gtag(
-    "config",
-    GA_TRACKING_ID,
-    {
-      page_title: document.title,
-      page_location: window.location.href,
-      send_page_view: true,
-      debug_mode: !IS_PRODUCTION, // Enable debug mode in development
-    }
-  );
+  window.gtag("js", new Date());
+  window.gtag("config", GA_TRACKING_ID, {
+    page_title: document.title,
+    page_location: window.location.href,
+    send_page_view: true,
+    debug_mode: !IS_PRODUCTION, // Enable debug mode in development
+  });
 
   console.log("Google Analytics initialized with ID:", GA_TRACKING_ID);
   if (!IS_PRODUCTION) {
@@ -69,7 +60,7 @@ export const trackEvent = (eventData: AnalyticsEvent): void => {
     return;
   }
 
-  if (typeof window !== "undefined" && window.gtag) {
+  if (typeof window !== "undefined" && typeof window.gtag === "function") {
     window.gtag("event", eventData.action, {
       event_category: eventData.category,
       event_label: eventData.label,

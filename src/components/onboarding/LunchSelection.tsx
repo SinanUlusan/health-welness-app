@@ -46,6 +46,7 @@ const LunchSelectionContent: React.FC<LunchSelectionProps> = ({
   // Execute query on mount only once
   useEffect(() => {
     execute();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Initialize form with React Hook Form + Zod
