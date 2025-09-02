@@ -133,8 +133,7 @@ temp/
 coverage/
 .nyc_output/
 
-# Mock server data (development only)
-mock-server/db.json
+
 
 # Stripe test keys (never commit real keys)
 stripe-keys.txt

@@ -1,0 +1,647 @@
+{
+  "onboarding": [
+    {
+      "id": "cf60",
+      "step": 1,
+      "data": {
+        "lunchType": "healthy"
+      },
+      "timestamp": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "e2ea",
+      "step": 1,
+      "data": {
+        "lunchType": "healthy"
+      },
+      "timestamp": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "04ce",
+      "step": 1,
+      "data": {
+        "lunchType": "fast_food"
+      },
+      "timestamp": "2025-08-30T13:06:33.997Z"
+    },
+    {
+      "id": "c49f",
+      "step": 2,
+      "data": {
+        "lunchType": "fast_food",
+        "weight": 84,
+        "weightUnit": "kg"
+      },
+      "timestamp": "2025-08-30T13:06:39.254Z"
+    },
+    {
+      "id": "2dc6",
+      "step": 1,
+      "data": {
+        "lunchType": "sandwiches"
+      },
+      "timestamp": "2025-08-31T11:16:08.385Z"
+    },
+    {
+      "id": "8a9f",
+      "step": 2,
+      "data": {
+        "lunchType": "sandwiches",
+        "weight": 84,
+        "weightUnit": "kg"
+      },
+      "timestamp": "2025-08-31T11:16:13.813Z"
+    },
+    {
+      "id": "6fb6",
+      "step": 1,
+      "data": {
+        "lunchType": "sandwiches"
+      },
+      "timestamp": "2025-08-31T12:22:45.041Z"
+    },
+    {
+      "id": "4098",
+      "step": 2,
+      "data": {
+        "lunchType": "sandwiches",
+        "weight": 84,
+        "weightUnit": "kg"
+      },
+      "timestamp": "2025-08-31T12:22:47.553Z"
+    },
+    {
+      "id": "5f7c",
+      "step": 1,
+      "data": {
+        "lunchType": "soups"
+      },
+      "timestamp": "2025-08-31T14:16:35.864Z"
+    },
+    {
+      "id": "fbe7",
+      "step": 2,
+      "data": {
+        "lunchType": "soups",
+        "weight": 84,
+        "weightUnit": "kg"
+      },
+      "timestamp": "2025-08-31T14:16:39.017Z"
+    },
+    {
+      "id": "3a50",
+      "step": 1,
+      "data": {
+        "lunchType": "sandwiches"
+      },
+      "timestamp": "2025-08-31T14:26:54.069Z"
+    },
+    {
+      "id": "6625",
+      "step": 2,
+      "data": {
+        "lunchType": "sandwiches",
+        "weight": 84,
+        "weightUnit": "kg"
+      },
+      "timestamp": "2025-08-31T14:27:56.062Z"
+    },
+    {
+      "id": "20d7",
+      "step": 2,
+      "data": {
+        "lunchType": "sandwiches",
+        "weight": 87,
+        "weightUnit": "kg"
+      },
+      "timestamp": "2025-08-31T14:54:17.409Z"
+    },
+    {
+      "id": "qr9y",
+      "step": 1,
+      "data": {
+        "lunchType": "sandwiches"
+      },
+      "timestamp": "2025-08-31T20:42:57.059Z"
+    },
+    {
+      "id": "pcqa",
+      "step": 1,
+      "data": {
+        "lunchType": "sandwiches"
+      },
+      "timestamp": "2025-08-31T20:53:26.780Z"
+    },
+    {
+      "id": "324d",
+      "step": 2,
+      "data": {
+        "lunchType": "sandwiches",
+        "weight": 84,
+        "weightUnit": "lbs"
+      },
+      "timestamp": "2025-08-31T20:55:23.720Z"
+    },
+    {
+      "id": "khcr",
+      "step": 1,
+      "data": {
+        "lunchType": "sandwiches"
+      },
+      "timestamp": "2025-08-31T22:27:06.067Z"
+    },
+    {
+      "id": "fssz",
+      "step": 2,
+      "data": {
+        "lunchType": "sandwiches",
+        "weight": 84,
+        "weightUnit": "kg"
+      },
+      "timestamp": "2025-08-31T22:28:23.808Z"
+    },
+    {
+      "id": "ug7f",
+      "step": 1,
+      "data": {
+        "lunchType": "sandwiches"
+      },
+      "timestamp": "2025-08-31T22:50:13.258Z"
+    },
+    {
+      "id": "dqbj",
+      "step": 2,
+      "data": {
+        "lunchType": "sandwiches",
+        "weight": 84,
+        "weightUnit": "kg"
+      },
+      "timestamp": "2025-08-31T22:50:16.385Z"
+    },
+    {
+      "id": "3rxe",
+      "step": 2,
+      "data": {
+        "lunchType": "sandwiches",
+        "weight": 84,
+        "weightUnit": "kg"
+      },
+      "timestamp": "2025-08-31T22:56:05.359Z"
+    },
+    {
+      "id": "1e0c",
+      "step": 1,
+      "data": {
+        "lunchType": "soups"
+      },
+      "timestamp": "2025-08-31T23:06:37.352Z"
+    },
+    {
+      "id": "bfyk",
+      "step": 2,
+      "data": {
+        "lunchType": "soups",
+        "weight": 84,
+        "weightUnit": "kg"
+      },
+      "timestamp": "2025-08-31T23:06:44.014Z"
+    },
+    {
+      "id": "uobw",
+      "step": 1,
+      "data": {
+        "lunchType": "fast_food"
+      },
+      "timestamp": "2025-08-31T23:11:33.254Z"
+    },
+    {
+      "id": "cwjw",
+      "step": 2,
+      "data": {
+        "lunchType": "fast_food",
+        "weight": 84,
+        "weightUnit": "kg"
+      },
+      "timestamp": "2025-08-31T23:11:35.545Z"
+    },
+    {
+      "id": "s2vt",
+      "step": 1,
+      "data": {
+        "lunchType": "sandwiches"
+      },
+      "timestamp": "2025-08-31T23:13:45.482Z"
+    },
+    {
+      "id": "n2ed",
+      "step": 2,
+      "data": {
+        "lunchType": "sandwiches",
+        "weight": 84,
+        "weightUnit": "kg"
+      },
+      "timestamp": "2025-08-31T23:13:47.527Z"
+    },
+    {
+      "id": "pz7n",
+      "step": 1,
+      "data": {
+        "lunchType": "sandwiches"
+      },
+      "timestamp": "2025-08-31T23:14:54.334Z"
+    },
+    {
+      "id": "g39t",
+      "step": 2,
+      "data": {
+        "lunchType": "sandwiches",
+        "weight": 87,
+        "weightUnit": "kg"
+      },
+      "timestamp": "2025-08-31T23:14:56.616Z"
+    },
+    {
+      "id": "taql",
+      "step": 1,
+      "data": {
+        "lunchType": "sandwiches"
+      },
+      "timestamp": "2025-08-31T23:20:57.254Z"
+    },
+    {
+      "id": "w9nq",
+      "step": 2,
+      "data": {
+        "lunchType": "sandwiches",
+        "weight": 84,
+        "weightUnit": "kg"
+      },
+      "timestamp": "2025-08-31T23:20:59.616Z"
+    },
+    {
+      "id": "ajps",
+      "step": 1,
+      "data": {
+        "lunchType": "soups"
+      },
+      "timestamp": "2025-08-31T23:21:48.207Z"
+    },
+    {
+      "id": "wiq9",
+      "step": 2,
+      "data": {
+        "lunchType": "soups",
+        "weight": 84,
+        "weightUnit": "kg"
+      },
+      "timestamp": "2025-08-31T23:21:50.588Z"
+    },
+    {
+      "id": "omwq",
+      "step": 1,
+      "data": {
+        "lunchType": "sandwiches"
+      },
+      "timestamp": "2025-09-01T18:45:56.818Z"
+    },
+    {
+      "id": "o5at",
+      "step": 2,
+      "data": {
+        "lunchType": "sandwiches",
+        "weight": 84,
+        "weightUnit": "kg"
+      },
+      "timestamp": "2025-09-01T18:46:01.594Z"
+    },
+    {
+      "id": "badi",
+      "step": 1,
+      "data": {
+        "lunchType": "other"
+      },
+      "timestamp": "2025-09-01T19:41:19.722Z"
+    },
+    {
+      "id": "fg0g",
+      "step": 2,
+      "data": {
+        "lunchType": "other",
+        "weight": 84,
+        "weightUnit": "kg"
+      },
+      "timestamp": "2025-09-01T19:41:26.648Z"
+    },
+    {
+      "id": "i0i3",
+      "step": 2,
+      "data": {
+        "lunchType": "other",
+        "weight": 84,
+        "weightUnit": "kg"
+      },
+      "timestamp": "2025-09-01T19:57:54.562Z"
+    },
+    {
+      "id": "8hg7",
+      "step": 1,
+      "data": {
+        "lunchType": "soups"
+      },
+      "timestamp": "2025-09-01T20:04:59.898Z"
+    },
+    {
+      "id": "7i54",
+      "step": 2,
+      "data": {
+        "lunchType": "soups",
+        "weight": 88,
+        "weightUnit": "kg"
+      },
+      "timestamp": "2025-09-01T20:05:02.744Z"
+    },
+    {
+      "id": "hrpa",
+      "step": 1,
+      "data": {
+        "lunchType": "soups"
+      },
+      "timestamp": "2025-09-01T20:07:13.767Z"
+    },
+    {
+      "id": "97cv",
+      "step": 2,
+      "data": {
+        "lunchType": "soups",
+        "weight": 88,
+        "weightUnit": "kg"
+      },
+      "timestamp": "2025-09-01T20:07:15.931Z"
+    },
+    {
+      "id": "yj9u",
+      "step": 1,
+      "data": {
+        "lunchType": "soups"
+      },
+      "timestamp": "2025-09-01T20:08:31.690Z"
+    },
+    {
+      "id": "5b5z",
+      "step": 2,
+      "data": {
+        "lunchType": "soups",
+        "weight": 88,
+        "weightUnit": "kg"
+      },
+      "timestamp": "2025-09-01T20:08:34.119Z"
+    },
+    {
+      "id": "lwzt",
+      "step": 1,
+      "data": {
+        "lunchType": "sandwiches"
+      },
+      "timestamp": "2025-09-01T21:33:08.921Z"
+    },
+    {
+      "id": "i44n",
+      "step": 2,
+      "data": {
+        "lunchType": "sandwiches",
+        "weight": 84,
+        "weightUnit": "kg"
+      },
+      "timestamp": "2025-09-01T21:35:40.668Z"
+    },
+    {
+      "id": "13ft",
+      "step": 1,
+      "data": {
+        "lunchType": "other"
+      },
+      "timestamp": "2025-09-01T21:48:41.968Z"
+    },
+    {
+      "id": "v4jd",
+      "step": 2,
+      "data": {
+        "lunchType": "other",
+        "weight": 84,
+        "weightUnit": "lbs"
+      },
+      "timestamp": "2025-09-01T21:48:47.618Z"
+    }
+  ],
+  "countries": [
+    {
+      "id": "turkey",
+      "code": "TR",
+      "nameKey": "paywall.countries.turkey"
+    },
+    {
+      "id": "united-states",
+      "code": "US",
+      "nameKey": "paywall.countries.unitedStates"
+    },
+    {
+      "id": "united-kingdom",
+      "code": "GB",
+      "nameKey": "paywall.countries.unitedKingdom"
+    },
+    {
+      "id": "germany",
+      "code": "DE",
+      "nameKey": "paywall.countries.germany"
+    },
+    {
+      "id": "france",
+      "code": "FR",
+      "nameKey": "paywall.countries.france"
+    },
+    {
+      "id": "spain",
+      "code": "ES",
+      "nameKey": "paywall.countries.spain"
+    },
+    {
+      "id": "italy",
+      "code": "IT",
+      "nameKey": "paywall.countries.italy"
+    },
+    {
+      "id": "canada",
+      "code": "CA",
+      "nameKey": "paywall.countries.canada"
+    },
+    {
+      "id": "australia",
+      "code": "AU",
+      "nameKey": "paywall.countries.australia"
+    },
+    {
+      "id": "netherlands",
+      "code": "NL",
+      "nameKey": "paywall.countries.netherlands"
+    }
+  ],
+  "subscriptionPlans": [
+    {
+      "id": "free-trial",
+      "name": "7 days free trial",
+      "duration": "1 year",
+      "price": 0,
+      "isFree": true,
+      "isPopular": true
+    },
+    {
+      "id": "3-months",
+      "name": "3 months",
+      "duration": "",
+      "price": 8.4,
+      "originalPrice": 11.6,
+      "discount": 29
+    },
+    {
+      "id": "1-month",
+      "name": "1 month",
+      "duration": "",
+      "price": 11.6
+    }
+  ],
+  "testimonials": [
+    {
+      "id": "testimonial-1",
+      "name": "Yasmine, -8 kg",
+      "ratingTitle": "Improved digestion",
+      "text": "My customized fasting plan really helped me with my stomach cramps and bloating problems.",
+      "stars": 5,
+      "beforeImage": "testimonial-before.png",
+      "afterImage": "testimonial-after.png"
+    },
+    {
+      "id": "testimonial-2",
+      "name": "Jennifer, -12 kg",
+      "ratingTitle": "Better energy levels",
+      "text": "I feel so much more energetic throughout the day. The plan is easy to follow and very effective.",
+      "stars": 5,
+      "beforeImage": "fat-body.png",
+      "afterImage": "skinny-body.png"
+    },
+    {
+      "id": "testimonial-3",
+      "name": "Sarah, -6 kg",
+      "ratingTitle": "Amazing results",
+      "text": "The personalized approach made all the difference. I've never felt better about my body.",
+      "stars": 5,
+      "beforeImage": "testimonial-before.png",
+      "afterImage": "testimonial-after.png"
+    },
+    {
+      "id": "testimonial-4",
+      "name": "Claire, -10 kg",
+      "ratingTitle": "Life changing",
+      "text": "This app changed my relationship with food completely. The results speak for themselves.",
+      "stars": 5,
+      "beforeImage": "testimonial-before.png",
+      "afterImage": "testimonial-after.png"
+    }
+  ],
+  "reviews": [
+    {
+      "id": "review-1",
+      "title": "Fascinating!",
+      "emoji": "🔥",
+      "stars": 5,
+      "content": "My customized fasting plan really helped me with my stomach cramps and bloating problems.",
+      "reviewer": "Kumsalp",
+      "reviewDate": "Nov 22"
+    },
+    {
+      "id": "review-2",
+      "title": "Awesome!",
+      "emoji": "⭐",
+      "stars": 5,
+      "content": "The personalized approach made all the difference. I've never felt better about my body.",
+      "reviewer": "Mertoz",
+      "reviewDate": "Nov 20"
+    },
+    {
+      "id": "review-3",
+      "title": "Incredible!",
+      "emoji": "💪",
+      "stars": 5,
+      "content": "This app changed my relationship with food completely. The results speak for themselves.",
+      "reviewer": "Ahmed",
+      "reviewDate": "Nov 18"
+    },
+    {
+      "id": "review-4",
+      "title": "Amazing!",
+      "emoji": "✨",
+      "stars": 4,
+      "content": "I feel so much more energetic throughout the day. The plan is easy to follow and very effective.",
+      "reviewer": "Sarah",
+      "reviewDate": "Nov 15"
+    }
+  ],
+  "payments": [
+    {
+      "id": "656a",
+      "paymentInfo": {
+        "paymentMethod": "card",
+        "country": "Turkey",
+        "expirationMonth": "12",
+        "expirationYear": "26",
+        "cardNumber": "4242 4242 4242 4242",
+        "email": "test@gmail.com",
+        "cvc": "123"
+      },
+      "planId": "free-trial",
+      "timestamp": "2025-08-31T14:10:33.839Z",
+      "transactionId": "txn_1756649433839"
+    },
+    {
+      "id": "4a14",
+      "paymentInfo": {
+        "paymentMethod": "card",
+        "country": "Turkey",
+        "email": "test@gmail.com",
+        "cardNumber": "4000 0000 0000 0002",
+        "expirationMonth": "12",
+        "expirationYear": "27",
+        "cvc": "273"
+      },
+      "planId": "1-month",
+      "timestamp": "2025-08-31T14:11:16.182Z",
+      "transactionId": "txn_1756649476182"
+    }
+  ],
+  "lunchTypes": [
+    {
+      "id": "sandwiches",
+      "value": "sandwiches",
+      "labelKey": "onboarding.lunchTypes.sandwiches",
+      "emoji": "🥪"
+    },
+    {
+      "id": "soups",
+      "value": "soups",
+      "labelKey": "onboarding.lunchTypes.soups",
+      "emoji": "🥗"
+    },
+    {
+      "id": "fast_food",
+      "value": "fastfood",
+      "labelKey": "onboarding.lunchTypes.fastFood",
+      "emoji": "🍟"
+    },
+    {
+      "id": "other",
+      "value": "other",
+      "labelKey": "onboarding.lunchTypes.other",
+      "emoji": "👀"
+    }
+  ],
+  "users": []
+}
