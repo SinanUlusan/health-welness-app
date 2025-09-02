@@ -1,4 +1,5 @@
 import { loadStripe, type Stripe } from "@stripe/stripe-js";
+import { getBaseUrl } from "../utils/config";
 
 // Initialize Stripe
 let stripePromise: Promise<Stripe | null>;
@@ -45,16 +46,13 @@ export const createPaymentIntent = async (
 ): Promise<{ clientSecret: string }> => {
   try {
     // Try to send request to backend first
-    const response = await fetch(
-      "http://localhost:3001/payments/create-intent",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      }
-    );
+    const response = await fetch(`${getBaseUrl()}/payments/create-intent`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
 
     if (response.ok) {
       const result = await response.json();
@@ -93,7 +91,7 @@ export const processPayment = async (
 ): Promise<PaymentResult> => {
   try {
     // Try to process payment through backend first
-    const response = await fetch("http://localhost:3001/payments/process", {
+    const response = await fetch(`${getBaseUrl()}/payments/process`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

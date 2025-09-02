@@ -8,13 +8,14 @@ import type {
   LunchOption,
   Country,
 } from "../types";
+import { getBaseUrl } from "../utils/config";
 
 /**
  * HTTP API service for handling data persistence and validation
  * Uses json-server mock API for development
  */
 class ApiService {
-  private baseUrl = "http://localhost:3001";
+  private baseUrl = getBaseUrl();
 
   /**
    * Submit onboarding step data

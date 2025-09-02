@@ -22,7 +22,17 @@ npm run mock-server
 npm run dev:full
 ```
 
-The mock server will run at `http://localhost:3001`.
+The mock server will run at `http://localhost:3001` when running locally.
+
+## Environment Configuration
+
+The application automatically detects the environment and uses the appropriate API endpoint:
+
+- **Development (localhost)**: `http://localhost:3001`
+- **Production (Vercel)**: `https://health-welness-app.vercel.app`
+- **Other environments**: Falls back to `http://localhost:3001`
+
+The API service automatically determines the correct base URL based on the current hostname.
 
 ## API Endpoints
 
