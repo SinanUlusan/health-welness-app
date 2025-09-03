@@ -29,7 +29,6 @@ The mock server will run at `http://localhost:3001` when running locally.
 The application automatically detects the environment and uses the appropriate API endpoint:
 
 - **Development (localhost)**: `http://localhost:3001`
-- **Production (Vercel)**: `https://health-welness-app.vercel.app`
 - **Other environments**: Falls back to `http://localhost:3001`
 
 The API service automatically determines the correct base URL based on the current hostname.
