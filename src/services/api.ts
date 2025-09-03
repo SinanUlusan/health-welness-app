@@ -30,7 +30,7 @@ class ApiService {
         throw new Error("Valid weight is required");
       }
 
-      const response = await fetch(`${this.baseUrl}/api/onboarding`, {
+      const response = await fetch(`${this.baseUrl}/onboarding`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -112,7 +112,7 @@ class ApiService {
    */
   async getPlans(): Promise<ApiResponse<SubscriptionPlan[]>> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/plans`);
+      const response = await fetch(`${this.baseUrl}/plans`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -170,7 +170,7 @@ class ApiService {
    */
   async getSubscriptionPlans(): Promise<ApiResponse<SubscriptionPlan[]>> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/subscriptionPlans`);
+      const response = await fetch(`${this.baseUrl}/subscriptionPlans`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -231,7 +231,7 @@ class ApiService {
    */
   async getLunchTypes(): Promise<ApiResponse<LunchOption[]>> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/lunchTypes`);
+      const response = await fetch(`${this.baseUrl}/lunchTypes`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -294,7 +294,7 @@ class ApiService {
    */
   async getTestimonials(): Promise<ApiResponse<Testimonial[]>> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/testimonials`);
+      const response = await fetch(`${this.baseUrl}/testimonials`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -369,7 +369,7 @@ class ApiService {
    */
   async getReviews(): Promise<ApiResponse<Review[]>> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/reviews`);
+      const response = await fetch(`${this.baseUrl}/reviews`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -446,7 +446,7 @@ class ApiService {
    */
   async getCountries(): Promise<ApiResponse<Country[]>> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/countries`);
+      const response = await fetch(`${this.baseUrl}/countries`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -538,7 +538,7 @@ class ApiService {
     try {
       this.validatePaymentInfo(paymentInfo);
 
-      const response = await fetch(`${this.baseUrl}/api/payments`, {
+      const response = await fetch(`${this.baseUrl}/payments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -729,7 +729,7 @@ class ApiService {
       this.validatePaymentInfo(paymentInfo);
 
       // Submit to mock API
-      const response = await fetch(`${this.baseUrl}/api/payment`, {
+      const response = await fetch(`${this.baseUrl}/payment`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
