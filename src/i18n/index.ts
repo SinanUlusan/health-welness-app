@@ -15,9 +15,9 @@ i18n.use(initReactI18next).init({
   },
   lng: "en", // Default language
   fallbackLng: "en",
-  debug: process.env.NODE_ENV === "development", // Enable debug in development
+  debug: process.env.NODE_ENV === "development",
   interpolation: {
-    escapeValue: false, // React already escapes values
+    escapeValue: false,
   },
   react: {
     useSuspense: false,

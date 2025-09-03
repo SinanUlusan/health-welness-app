@@ -1,7 +1,6 @@
-import React, { useEffect } from "react";
-import { Header, Success } from "../components";
+import React from "react";
+import { Header, Success, EventTracker } from "../components";
 import { useAppState } from "../hooks/useAppState";
-import { trackPageView, trackConversion } from "../services/analytics";
 
 /**
  * Success Page - Completion and Next Steps
@@ -10,11 +9,7 @@ import { trackPageView, trackConversion } from "../services/analytics";
 export const SuccessPage: React.FC = () => {
   const { appState, resetState } = useAppState();
 
-  // Track page view and conversion
-  useEffect(() => {
-    trackPageView("Success Page");
-    trackConversion("onboarding_complete", 1);
-  }, []);
+  // Get email with multiple fallback mechanisms
 
   // Get email with multiple fallback mechanisms
   let userEmail = appState.paymentInfo.email;
@@ -44,6 +39,13 @@ export const SuccessPage: React.FC = () => {
 
   return (
     <>
+      <EventTracker eventKey="Success Page" eventType="page_view" />
+      <EventTracker
+        eventKey="onboarding_complete"
+        eventType="conversion"
+        conversionType="onboarding_complete"
+        conversionValue={1}
+      />
       <Header />
       <Success userEmail={userEmail} onGoHome={handleGoHome} />
     </>

@@ -759,7 +759,6 @@
 }
 
 [dir="rtl"] .payment-method-content {
-  flex-direction: row-reverse;
   text-align: right;
 }
 

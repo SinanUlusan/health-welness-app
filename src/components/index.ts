@@ -5,4 +5,10 @@ export { Paywall } from "./paywall";
 export { PaymentForm, StripePaymentForm, SecureCheckout } from "./payment";
 export { Success } from "./success";
 export { ReviewSlider } from "./reviews";
-export { Loading, ErrorFallback, ErrorBoundary } from "./common";
+export {
+  Loading,
+  ErrorFallback,
+  ErrorBoundary,
+  PageTracker,
+  EventTracker,
+} from "./common";

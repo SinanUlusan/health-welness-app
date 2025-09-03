@@ -49,7 +49,6 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
     formatCardholderName,
   } = useFormFormatters();
 
-  // Initialize form with React Hook Form + Zod
   const form = usePaymentForm(t, {
     email: customerEmail,
     paymentMethod: "card",
@@ -82,10 +81,8 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
     setError("");
 
     try {
-      // Track payment attempt
       trackPaymentEvent("payment_attempt", plan.id);
 
-      // Create payment intent
       const { clientSecret } = await createPaymentIntent({
         amount: toCents(plan.price),
         currency: "usd",
@@ -94,7 +91,6 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
         customerName: data.cardholderName,
       });
 
-      // Process payment (mock)
       const result = await processPayment(null, clientSecret, {
         email: data.email,
         name: data.cardholderName,

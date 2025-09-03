@@ -10,7 +10,6 @@ interface ReviewSliderProps {
   className?: string;
 }
 
-// Loading fallback component
 const ReviewSliderLoading: React.FC<{ className?: string }> = ({
   className = "",
 }) => (
@@ -44,7 +43,6 @@ const ReviewSliderLoading: React.FC<{ className?: string }> = ({
   </div>
 );
 
-// Main ReviewSlider component with traditional data fetching
 const ReviewSliderContent: React.FC<ReviewSliderProps> = ({
   className = "",
 }) => {
@@ -58,7 +56,6 @@ const ReviewSliderContent: React.FC<ReviewSliderProps> = ({
 
   const sliderRef = useRef<HTMLDivElement>(null);
 
-  // Traditional data fetching with useEffect
   useEffect(() => {
     const loadReviews = async () => {
       try {
@@ -79,12 +76,10 @@ const ReviewSliderContent: React.FC<ReviewSliderProps> = ({
     loadReviews();
   }, []);
 
-  // Show loading state while data is being fetched
   if (isLoading) {
     return <ReviewSliderLoading className={className} />;
   }
 
-  // Get translated review data
   const getTranslatedReview = (review: Review) => {
     return {
       title: t(`paywall.reviews.titles.${review.id}`, review.title),
@@ -94,7 +89,6 @@ const ReviewSliderContent: React.FC<ReviewSliderProps> = ({
     };
   };
 
-  // Handle drag start
   const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
     setIsDragging(true);
     const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
@@ -102,7 +96,6 @@ const ReviewSliderContent: React.FC<ReviewSliderProps> = ({
     setDragOffset(0);
   };
 
-  // Handle drag move with bounds checking
   const handleDragMove = (e: React.MouseEvent | React.TouchEvent) => {
     if (!isDragging) return;
 
@@ -110,43 +103,37 @@ const ReviewSliderContent: React.FC<ReviewSliderProps> = ({
     const deltaX = clientX - startX;
     const isRTL = document.documentElement.dir === "rtl";
 
-    // Limit drag offset based on current position
     let limitedDeltaX = deltaX;
 
-    // If at first slide and trying to go back, limit the drag
     if (currentIndex === 0 && (isRTL ? deltaX < 0 : deltaX > 0)) {
-      limitedDeltaX = deltaX * 0.3; // Allow some resistance
+      limitedDeltaX = deltaX * 0.3;
     }
 
-    // If at last slide and trying to go forward, limit the drag
     if (
       currentIndex === reviews.length - 1 &&
       (isRTL ? deltaX > 0 : deltaX < 0)
     ) {
-      limitedDeltaX = deltaX * 0.3; // Allow some resistance
+      limitedDeltaX = deltaX * 0.3;
     }
 
     setDragOffset(limitedDeltaX);
   };
 
-  // Handle drag end
   const handleDragEnd = () => {
     if (!isDragging) return;
 
     setIsDragging(false);
-    const threshold = 50; // Minimum drag distance to trigger slide change
+    const threshold = 50;
     const isRTL = document.documentElement.dir === "rtl";
 
     if (Math.abs(dragOffset) > threshold) {
       if ((isRTL ? dragOffset < 0 : dragOffset > 0) && currentIndex > 0) {
-        // Swipe right (LTR) or left (RTL) - go to previous
         setCurrentIndex(currentIndex - 1);
         trackUserInteraction("review_slider", "swipe_previous");
       } else if (
         (isRTL ? dragOffset > 0 : dragOffset < 0) &&
         currentIndex < reviews.length - 1
       ) {
-        // Swipe left (LTR) or right (RTL) - go to next
         setCurrentIndex(currentIndex + 1);
         trackUserInteraction("review_slider", "swipe_next");
       }
@@ -155,7 +142,6 @@ const ReviewSliderContent: React.FC<ReviewSliderProps> = ({
     setDragOffset(0);
   };
 
-  // Handle click on card
   const handleCardClick = (index: number) => {
     if (!isDragging) {
       setCurrentIndex(index);
@@ -163,30 +149,19 @@ const ReviewSliderContent: React.FC<ReviewSliderProps> = ({
     }
   };
 
-  // Calculate card width based on screen size
   const getCardWidth = () => {
     if (window.innerWidth <= 768) {
-      return 282; // 270px card + 12px gap
+      return 282;
     }
-    return 282; // 270px card + 12px gap
+    return 282;
   };
 
   const cardWidth = getCardWidth();
-
-  // Calculate the transform offset to center the active card
-  const getTransformOffset = () => {
-    return 0; // No padding, start from the very left
-  };
-
-  const transformOffset = getTransformOffset();
-
-  // Check if RTL
+  const transformOffset = 0;
   const isRTL = document.documentElement.dir === "rtl";
 
-  // Calculate transform based on direction
   const getTransformValue = () => {
     if (isRTL) {
-      // In RTL, we need to reverse the direction
       return `${transformOffset + currentIndex * cardWidth + dragOffset}px`;
     }
     return `${transformOffset - currentIndex * cardWidth + dragOffset}px`;
@@ -275,7 +250,6 @@ const ReviewSliderContent: React.FC<ReviewSliderProps> = ({
   );
 };
 
-// Main exported component
 export const ReviewSlider: React.FC<ReviewSliderProps> = (props) => {
   return <ReviewSliderContent {...props} />;
 };

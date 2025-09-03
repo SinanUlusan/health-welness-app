@@ -797,6 +797,24 @@
         "weightUnit": "kg"
       },
       "timestamp": "2025-09-02T14:14:53.479Z"
+    },
+    {
+      "id": "qq4y",
+      "step": 1,
+      "data": {
+        "lunchType": "sandwiches"
+      },
+      "timestamp": "2025-09-03T08:24:56.827Z"
+    },
+    {
+      "id": "qmgk",
+      "step": 2,
+      "data": {
+        "lunchType": "sandwiches",
+        "weight": 84,
+        "weightUnit": "kg"
+      },
+      "timestamp": "2025-09-03T08:25:00.557Z"
     }
   ],
   "countries": [

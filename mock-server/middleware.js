@@ -1,5 +1,4 @@
 module.exports = (req, res, next) => {
-  // Enable CORS
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Headers', 'Content-Type');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -25,14 +24,12 @@ module.exports = (req, res, next) => {
 
   // Handle Stripe payment processing
   if (req.method === 'POST' && req.path === '/payments/process') {
-
     const { clientSecret, paymentData } = req.body;
 
-    // Check if this is a test card that should fail
     const cardNumber = paymentData?.cardNumber?.replace(/\s/g, '') || '';
     const isDeclineCard = cardNumber === '4000000000000002';
 
-    const shouldSucceed = !isDeclineCard; // Fail only for decline test card
+    const shouldSucceed = !isDeclineCard;
 
     if (shouldSucceed) {
       res.status(200).json({
@@ -56,6 +53,5 @@ module.exports = (req, res, next) => {
     return;
   }
 
-  // Continue to next middleware
   next();
 }; 

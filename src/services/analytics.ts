@@ -10,7 +10,6 @@ const ENABLE_ANALYTICS_LOCAL =
  * Initialize Google Analytics
  */
 export const initializeAnalytics = (): void => {
-  // Only initialize in production or if explicitly enabled for local testing
   if (!IS_PRODUCTION && !ENABLE_ANALYTICS_LOCAL) {
     console.log("Google Analytics disabled in development mode");
     console.log(
@@ -30,7 +29,6 @@ export const initializeAnalytics = (): void => {
   script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`;
   document.head.appendChild(script);
 
-  // Initialize dataLayer and gtag
   window.dataLayer = window.dataLayer || [];
   window.gtag = function gtag(...args: unknown[]) {
     window.dataLayer.push(args);
@@ -41,12 +39,12 @@ export const initializeAnalytics = (): void => {
     page_title: document.title,
     page_location: window.location.href,
     send_page_view: true,
-    debug_mode: !IS_PRODUCTION, // Enable debug mode in development
+    debug_mode: !IS_PRODUCTION,
   });
 
   console.log("Google Analytics initialized with ID:", GA_TRACKING_ID);
   if (!IS_PRODUCTION) {
-    console.log("🔍 Debug mode enabled - check browser console for GA events");
+    console.log(" Debug mode enabled - check browser console for GA events");
   }
 };
 
@@ -54,7 +52,6 @@ export const initializeAnalytics = (): void => {
  * Track custom events
  */
 export const trackEvent = (eventData: AnalyticsEvent): void => {
-  // Only track in production or if explicitly enabled for local testing
   if (!IS_PRODUCTION && !ENABLE_ANALYTICS_LOCAL) {
     console.log("Analytics event (development):", eventData);
     return;

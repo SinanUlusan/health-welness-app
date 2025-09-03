@@ -1,13 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Header, LunchSelection } from "../components";
+import { Header, LunchSelection, EventTracker } from "../components";
 import { useAppState } from "../hooks/useAppState";
 import { addLanguagePrefix } from "../utils/urlUtils";
-import {
-  trackPageView,
-  trackOnboardingStep,
-  trackLunchSelection,
-} from "../services/analytics";
 
 /**
  * Onboarding Step 1 Page - Lunch Type Selection
@@ -19,20 +14,6 @@ export const OnboardingStep1: React.FC = () => {
   const [selectedLunchType, setSelectedLunchType] = useState(
     appState.onboardingData.lunchType || ""
   );
-  const isInitialMount = useRef(true);
-
-  // Track onboarding step and lunch selection when lunch type changes
-  useEffect(() => {
-    if (!isInitialMount.current) {
-      trackPageView("Onboarding Step 1");
-      trackOnboardingStep(1, { lunchType: selectedLunchType });
-      if (selectedLunchType) {
-        trackLunchSelection(selectedLunchType);
-      }
-    } else {
-      isInitialMount.current = false;
-    }
-  }, [selectedLunchType]);
 
   const handleNext = async () => {
     if (selectedLunchType) {
@@ -53,6 +34,13 @@ export const OnboardingStep1: React.FC = () => {
 
   return (
     <>
+      <EventTracker eventKey="Onboarding Step 1" eventType="page_view" />
+      <EventTracker
+        eventKey="step_1"
+        eventType="onboarding_step"
+        stepNumber={1}
+        additionalData={{ lunchType: selectedLunchType }}
+      />
       <Header />
       <LunchSelection
         selectedLunch={selectedLunchType}

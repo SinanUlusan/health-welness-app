@@ -19,7 +19,7 @@ interface LunchSelectionProps {
   loading?: boolean;
 }
 
-// Main LunchSelection component with fixed data fetching
+// Main LunchSelection component
 const LunchSelectionContent: React.FC<LunchSelectionProps> = ({
   selectedLunch = "",
   onSelect,
@@ -28,7 +28,6 @@ const LunchSelectionContent: React.FC<LunchSelectionProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  // Use useQuery instead of useData to prevent memory leaks
   const {
     data: lunchOptions,
     loading: dataLoading,
@@ -43,13 +42,11 @@ const LunchSelectionContent: React.FC<LunchSelectionProps> = ({
     })
   );
 
-  // Execute query on mount only once
   useEffect(() => {
     execute();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Initialize form with React Hook Form + Zod
   const form = useLunchForm({
     lunchType: selectedLunch as
       | "sandwiches"
@@ -212,7 +209,6 @@ const LunchSelectionContent: React.FC<LunchSelectionProps> = ({
   );
 };
 
-// Main exported component
 export const LunchSelection: React.FC<LunchSelectionProps> = (props) => {
   return <LunchSelectionContent {...props} />;
 };

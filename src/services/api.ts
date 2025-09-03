@@ -17,20 +17,15 @@ import { getBaseUrl, isProduction } from "../utils/config";
 class ApiService {
   private baseUrl = getBaseUrl();
 
-  /**
-   * Submit onboarding step data
-   */
   async submitOnboardingStep(
     step: number,
     data: Partial<OnboardingData>
   ): Promise<ApiResponse> {
-    // In production, use fallback directly since there's no API
     if (isProduction()) {
       return this.submitOnboardingStepFallback(step, data);
     }
 
     try {
-      // Validate the data based on step
       if (step === 1 && !data.lunchType) {
         throw new Error("Lunch type is required");
       }
@@ -39,7 +34,6 @@ class ApiService {
         throw new Error("Valid weight is required");
       }
 
-      // Submit to mock API
       const response = await fetch(`${this.baseUrl}/onboarding`, {
         method: "POST",
         headers: {
@@ -56,9 +50,8 @@ class ApiService {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      await response.json(); // Consume the response but don't store it
+      await response.json();
 
-      // Store locally as backup
       const existingData = this.getStoredOnboardingData();
       const updatedData = { ...existingData, ...data };
       localStorage.setItem("onboarding_data", JSON.stringify(updatedData));
@@ -81,11 +74,9 @@ class ApiService {
     step: number,
     data: Partial<OnboardingData>
   ): Promise<ApiResponse> {
-    // Simulate network delay
     await new Promise((resolve) => setTimeout(resolve, 300));
 
     try {
-      // Validate the data based on step
       if (step === 1 && !data.lunchType) {
         throw new Error("Lunch type is required");
       }
@@ -124,7 +115,6 @@ class ApiService {
    * Get available subscription plans
    */
   async getPlans(): Promise<ApiResponse<SubscriptionPlan[]>> {
-    // In production, use fallback directly since there's no API
     if (isProduction()) {
       return this.getPlansFallback();
     }
@@ -142,7 +132,6 @@ class ApiService {
         data: plans,
       };
     } catch {
-      // Fallback to hardcoded plans if server is not available
       console.warn("Mock server not available, using fallback plans data");
       return this.getPlansFallback();
     }
@@ -188,7 +177,6 @@ class ApiService {
    * Get available subscription plans
    */
   async getSubscriptionPlans(): Promise<ApiResponse<SubscriptionPlan[]>> {
-    // In production, use fallback directly since there's no API
     if (isProduction()) {
       return this.getSubscriptionPlansFallback();
     }
@@ -206,7 +194,6 @@ class ApiService {
         data: plans,
       };
     } catch {
-      // Fallback to hardcoded plans if server is not available
       console.warn("Mock server not available, using fallback data");
       return this.getSubscriptionPlansFallback();
     }
@@ -255,7 +242,6 @@ class ApiService {
    * Get available lunch types
    */
   async getLunchTypes(): Promise<ApiResponse<LunchOption[]>> {
-    // In production, use fallback directly since there's no API
     if (isProduction()) {
       return this.getLunchTypesFallback();
     }
@@ -273,7 +259,6 @@ class ApiService {
         data: lunchTypes,
       };
     } catch {
-      // Fallback to hardcoded lunch types if server is not available
       console.warn(
         "Mock server not available, using fallback lunch types data"
       );
@@ -324,7 +309,6 @@ class ApiService {
    * Get testimonials
    */
   async getTestimonials(): Promise<ApiResponse<Testimonial[]>> {
-    // In production, use fallback directly since there's no API
     if (isProduction()) {
       return this.getTestimonialsFallback();
     }
@@ -342,7 +326,6 @@ class ApiService {
         data: testimonials,
       };
     } catch {
-      // Fallback to hardcoded testimonials if server is not available
       console.warn(
         "Mock server not available, using fallback testimonials data"
       );
@@ -405,7 +388,6 @@ class ApiService {
    * Get reviews for the review slider
    */
   async getReviews(): Promise<ApiResponse<Review[]>> {
-    // In production, use fallback directly since there's no API
     if (isProduction()) {
       return this.getReviewsFallback();
     }
@@ -423,7 +405,6 @@ class ApiService {
         data: reviews,
       };
     } catch {
-      // Fallback to hardcoded reviews if server is not available
       console.warn("Mock server not available, using fallback reviews data");
       return this.getReviewsFallback();
     }
@@ -488,7 +469,6 @@ class ApiService {
    * Get available countries
    */
   async getCountries(): Promise<ApiResponse<Country[]>> {
-    // In production, use fallback directly since there's no API
     if (isProduction()) {
       return this.getCountriesFallback();
     }
@@ -506,7 +486,6 @@ class ApiService {
         data: countries,
       };
     } catch {
-      // Fallback to hardcoded countries if server is not available
       console.warn("Mock server not available, using fallback countries data");
       return this.getCountriesFallback();
     }
@@ -584,13 +563,11 @@ class ApiService {
     paymentInfo: PaymentInfo,
     planId: string
   ): Promise<ApiResponse> {
-    // In production, use fallback directly since there's no API
     if (isProduction()) {
       return this.processPaymentFallback(paymentInfo, planId);
     }
 
     try {
-      // Validate payment information before sending
       this.validatePaymentInfo(paymentInfo);
 
       const response = await fetch(`${this.baseUrl}/payments`, {
@@ -612,7 +589,6 @@ class ApiService {
 
       const result = await response.json();
 
-      // Store payment info locally as backup
       const paymentData = {
         planId,
         email: paymentInfo.email,
@@ -671,7 +647,6 @@ class ApiService {
         }
       }
 
-      // Store payment info (in real app, this would be securely handled)
       const paymentData = {
         planId,
         email: paymentInfo.email,
@@ -734,7 +709,7 @@ class ApiService {
   }
 
   /**
-   * Validate card number (simple Luhn algorithm check)
+   * Validate card number
    */
   private isValidCardNumber(cardNumber: string): boolean {
     const cleanNumber = cardNumber.replace(/\s/g, "");
@@ -742,21 +717,15 @@ class ApiService {
       return false;
     }
 
-    // Test card numbers - only these should be accepted in demo
-    const validTestCards = [
-      "4242424242424242", // Visa - Success
-      "4000000000000002", // Visa - Declined
-    ];
+    const validTestCards = ["4242424242424242", "4000000000000002"];
 
     if (validTestCards.includes(cleanNumber)) {
-      // 4000000000000002 should be declined
       if (cleanNumber === "4000000000000002") {
         return false;
       }
       return true;
     }
 
-    // For other cards, use Luhn algorithm
     return this.luhnCheck(cleanNumber);
   }
 
@@ -788,13 +757,11 @@ class ApiService {
    * Submit payment
    */
   async submitPayment(paymentInfo: PaymentInfo): Promise<ApiResponse> {
-    // In production, use fallback directly since there's no API
     if (isProduction()) {
       return this.submitPaymentFallback(paymentInfo);
     }
 
     try {
-      // Validate payment information
       this.validatePaymentInfo(paymentInfo);
 
       // Submit to mock API
@@ -819,7 +786,6 @@ class ApiService {
         data: result,
       };
     } catch {
-      // Fallback to local processing if server is not available
       console.warn("Mock server not available, processing payment locally");
       return this.submitPaymentFallback(paymentInfo);
     }
@@ -831,14 +797,11 @@ class ApiService {
   private async submitPaymentFallback(
     paymentInfo: PaymentInfo
   ): Promise<ApiResponse> {
-    // Simulate network delay
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     try {
-      // Validate payment information
       this.validatePaymentInfo(paymentInfo);
 
-      // Simulate payment processing
       const transactionId = `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
       return {
@@ -867,5 +830,4 @@ class ApiService {
   }
 }
 
-// Export singleton instance
 export const apiService = new ApiService();
