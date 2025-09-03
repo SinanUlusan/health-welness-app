@@ -64,8 +64,6 @@ export const trackEvent = (eventData: AnalyticsEvent): void => {
       value: eventData.value,
       custom_parameter: eventData.event,
     });
-
-    console.log("Analytics event tracked:", eventData);
   }
 };
 

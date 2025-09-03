@@ -8,7 +8,7 @@ import type {
   LunchOption,
   Country,
 } from "../types";
-import { getBaseUrl, isProduction } from "../utils/config";
+import { getBaseUrl } from "../utils/config";
 
 /**
  * HTTP API service for handling data persistence and validation
@@ -21,10 +21,6 @@ class ApiService {
     step: number,
     data: Partial<OnboardingData>
   ): Promise<ApiResponse> {
-    if (isProduction()) {
-      return this.submitOnboardingStepFallback(step, data);
-    }
-
     try {
       if (step === 1 && !data.lunchType) {
         throw new Error("Lunch type is required");
@@ -34,7 +30,7 @@ class ApiService {
         throw new Error("Valid weight is required");
       }
 
-      const response = await fetch(`${this.baseUrl}/onboarding`, {
+      const response = await fetch(`${this.baseUrl}/api/onboarding`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -115,12 +111,8 @@ class ApiService {
    * Get available subscription plans
    */
   async getPlans(): Promise<ApiResponse<SubscriptionPlan[]>> {
-    if (isProduction()) {
-      return this.getPlansFallback();
-    }
-
     try {
-      const response = await fetch(`${this.baseUrl}/plans`);
+      const response = await fetch(`${this.baseUrl}/api/plans`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -177,12 +169,8 @@ class ApiService {
    * Get available subscription plans
    */
   async getSubscriptionPlans(): Promise<ApiResponse<SubscriptionPlan[]>> {
-    if (isProduction()) {
-      return this.getSubscriptionPlansFallback();
-    }
-
     try {
-      const response = await fetch(`${this.baseUrl}/subscriptionPlans`);
+      const response = await fetch(`${this.baseUrl}/api/subscriptionPlans`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -242,12 +230,8 @@ class ApiService {
    * Get available lunch types
    */
   async getLunchTypes(): Promise<ApiResponse<LunchOption[]>> {
-    if (isProduction()) {
-      return this.getLunchTypesFallback();
-    }
-
     try {
-      const response = await fetch(`${this.baseUrl}/lunchTypes`);
+      const response = await fetch(`${this.baseUrl}/api/lunchTypes`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -309,12 +293,8 @@ class ApiService {
    * Get testimonials
    */
   async getTestimonials(): Promise<ApiResponse<Testimonial[]>> {
-    if (isProduction()) {
-      return this.getTestimonialsFallback();
-    }
-
     try {
-      const response = await fetch(`${this.baseUrl}/testimonials`);
+      const response = await fetch(`${this.baseUrl}/api/testimonials`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -388,12 +368,8 @@ class ApiService {
    * Get reviews for the review slider
    */
   async getReviews(): Promise<ApiResponse<Review[]>> {
-    if (isProduction()) {
-      return this.getReviewsFallback();
-    }
-
     try {
-      const response = await fetch(`${this.baseUrl}/reviews`);
+      const response = await fetch(`${this.baseUrl}/api/reviews`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -469,12 +445,8 @@ class ApiService {
    * Get available countries
    */
   async getCountries(): Promise<ApiResponse<Country[]>> {
-    if (isProduction()) {
-      return this.getCountriesFallback();
-    }
-
     try {
-      const response = await fetch(`${this.baseUrl}/countries`);
+      const response = await fetch(`${this.baseUrl}/api/countries`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -563,14 +535,10 @@ class ApiService {
     paymentInfo: PaymentInfo,
     planId: string
   ): Promise<ApiResponse> {
-    if (isProduction()) {
-      return this.processPaymentFallback(paymentInfo, planId);
-    }
-
     try {
       this.validatePaymentInfo(paymentInfo);
 
-      const response = await fetch(`${this.baseUrl}/payments`, {
+      const response = await fetch(`${this.baseUrl}/api/payments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -757,15 +725,11 @@ class ApiService {
    * Submit payment
    */
   async submitPayment(paymentInfo: PaymentInfo): Promise<ApiResponse> {
-    if (isProduction()) {
-      return this.submitPaymentFallback(paymentInfo);
-    }
-
     try {
       this.validatePaymentInfo(paymentInfo);
 
       // Submit to mock API
-      const response = await fetch(`${this.baseUrl}/payment`, {
+      const response = await fetch(`${this.baseUrl}/api/payment`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

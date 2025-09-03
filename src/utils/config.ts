@@ -18,7 +18,8 @@ export const getBaseUrl = (): string => {
   if (isDevelopment) {
     return "http://localhost:3001";
   } else if (isProduction) {
-    return "https://invalid-api-url-for-production";
+    // Use the same domain for API calls in production
+    return window.location.origin;
   } else {
     return "http://localhost:3001";
   }
