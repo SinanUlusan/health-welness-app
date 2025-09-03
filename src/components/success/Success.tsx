@@ -21,7 +21,6 @@ interface SuccessProps {
 export const Success: React.FC<SuccessProps> = ({ userEmail, onGoHome }) => {
   const { t } = useTranslation();
 
-  // Render olduğunda direkt track et
   trackUserInteraction("success_page", "view");
 
   // Handle browser back button
